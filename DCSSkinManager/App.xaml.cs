@@ -7,5 +7,6 @@ namespace DCSSkinManager
     /// </summary>
     public partial class App : Application
     {
+        
     }
 }
