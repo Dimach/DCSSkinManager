@@ -6,7 +6,15 @@
         xmlns:local="clr-namespace:DCSSkinManager"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+    <DockPanel LastChildFill="True">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+            <Button Background="AliceBlue" Content="Сохранить"/>
+            <Button Background="AliceBlue" Content="Загрузить"/>
+            <Button Background="AliceBlue" Content="Удалить"/>
+            <Button Background="AliceBlue" Content="Сломать"/>
+        </StackPanel>
+        <Button DockPanel.Dock="Bottom" Background="BlanchedAlmond" Content="Нижняя кнопка" />
+        <Button DockPanel.Dock="Left" Background="Aquamarine" Content="Левая кнопка" />
+        <Button DockPanel.Dock="Right" Background="DarkGreen" Content="Правая кнопка" />
+    </DockPanel>
 </Window>
