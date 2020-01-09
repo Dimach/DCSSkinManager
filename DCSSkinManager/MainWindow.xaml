@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DCSSkinManager"
+        xmlns:utils="clr-namespace:DCSSkinManager.Utils"
+        xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <DockPanel LastChildFill="True">
@@ -13,8 +15,24 @@
             <Button Background="AliceBlue" Content="Удалить"/>
             <Button Background="AliceBlue" Content="Сломать"/>
         </StackPanel>
-        <Button DockPanel.Dock="Bottom" Background="BlanchedAlmond" Content="Нижняя кнопка" />
-        <Button DockPanel.Dock="Left" Background="Aquamarine" Content="Левая кнопка" />
-        <Button DockPanel.Dock="Right" Background="DarkGreen" Content="Правая кнопка" />
+        <ProgressBar DockPanel.Dock="Bottom" Height="50" Minimum="0" Maximum="100" Value="55"/>
+        <ListView ItemsSource="{Binding Source={StaticResource enmPositions}}" FontSize="20"/>
+        <ListView Name="skinList" ItemsSource="{DynamicResource ResourceKey=skins}" >
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Name}" Header="File name"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Author}" Header="Author"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Date}" Header="Date"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Description}" Header="Description"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Downloads}" Header="Downloads"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=Size}" Header="Size"/>
+                </GridView>
+            </ListView.View>
+            <ListView.Resources>
+                <collections:ArrayList x:Key="skins">
+                    <local:UserFile Name="SkinOne" Author="Anonimus" Date="21.01.2012" Description="NoDesc" Downloads="-1" Size="999"/>
+                </collections:ArrayList>
+            </ListView.Resources>
+        </ListView>
     </DockPanel>
 </Window>

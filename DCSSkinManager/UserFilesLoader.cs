@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Net;
+using DCSSkinManager.Utils;
 
 namespace DCSSkinManager
 {
@@ -16,22 +18,27 @@ namespace DCSSkinManager
         }
     }
 
-    public class UserFile
+    public struct UserFile
     {
-        public readonly String Name;
-        public readonly String Description;
-        public readonly String Author;
-        public readonly String Date;
-        public readonly String Size;
-        public readonly String Downloads;
-        public readonly String DownloadLink;
+        public String Name { get; set; }
+        public String Description { get; set; }
+        public String Author { get; set; }
+        public String Date { get; set; }
+        public String Size { get; set; }
+        public String Downloads { get; set; }
+        private String DownloadLink { get; set; }
     }
 
+    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
     public enum UnitType
     {
+        [Description("Ka-50")]
         KA50 = 31,
+        [Description("Su-27")]
         SU27 = 23,
+        [Description("Su-33")]
         SU33 = 28,
+        [Description("Su-25")]
         SU25 = 24
     }
 
