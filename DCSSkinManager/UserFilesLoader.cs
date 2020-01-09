@@ -1,16 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Net;
 using DCSSkinManager.Utils;
+using System.Text.RegularExpressions;
 
 namespace DCSSkinManager
 {
     public class UserFiles
     {
         public readonly UnitType Filter;
-        public readonly List<UserFile> Files;
+        public readonly List<UserFile> Files = new List<UserFile>();
 
         public UserFiles(UnitType filter)
         {
@@ -46,19 +49,33 @@ namespace DCSSkinManager
     {
         public static void LoadUserFiles(UserFiles list)
         {
-            string html = string.Empty;
-            string url = $@"http://www.digitalcombatsimulator.com/en/files/?PER_PAGE=100&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={list.Filter}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.AutomaticDecompression = DecompressionMethods.GZip;
+            var url =
+                $@"http://www.digitalcombatsimulator.com/en/files/?PER_PAGE=100&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int)list.Filter}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 |
+                                                   SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
 
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+
+            using (HttpWebResponse response = (HttpWebResponse) request.GetResponse())
             using (Stream stream = response.GetResponseStream())
             using (StreamReader reader = new StreamReader(stream))
             {
-                html = reader.ReadToEnd();
+                var page = reader.ReadToEnd();
+                foreach (var i in page.Split(new[] {"<div class=\"col-xs-10\">"}, StringSplitOptions.None).Skip(1))
+                {
+                    var endIndex = i.IndexOf("<div class=\"col-xs-4 col-xs-offset-2\">");
+                    if (endIndex < 0) continue;
+                    var userFile = new UserFile();
+                    var dataString = i.Substring(0, endIndex);
+                    var name = Regex.Match(i.Substring(0, endIndex), "<a href=\".+\">.+<\\/a>").Value;
+                    var startIndex = name.IndexOf(">") + 1;
+                    userFile.Name = name.Substring(startIndex, name.IndexOf("</a>") - startIndex);
+                    list.Files.Add(userFile);
+                }
             }
-
-            Console.WriteLine(html);
         }
     }
 }
