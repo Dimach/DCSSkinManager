@@ -13,7 +13,7 @@ namespace DCSSkinManager
     public class UserFiles
     {
         public readonly UnitType Filter;
-        public readonly List<UserFile> Files = new List<UserFile>();
+        public List<UserFile> Files { get; } = new List<UserFile>();
 
         public UserFiles(UnitType filter)
         {

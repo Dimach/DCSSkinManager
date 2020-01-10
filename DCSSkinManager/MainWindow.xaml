@@ -10,14 +10,14 @@
         Title="MainWindow" Height="450" Width="800">
     <DockPanel LastChildFill="True">
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <Button Background="AliceBlue" Content="Сохранить"/>
-            <Button Background="AliceBlue" Content="Загрузить"/>
+            <Button Background="AliceBlue" Content="Сохранить" BorderBrush="Black"/>
+            <Button Background="AliceBlue" Content="Загрузить" BorderBrush="Black"/>
             <Button Background="AliceBlue" Content="Удалить"/>
             <Button Background="AliceBlue" Content="Сломать"/>
         </StackPanel>
         <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55"/>
-        <ListView ItemsSource="{Binding Source={StaticResource enmPositions}}" FontSize="20"/>
-        <ListView Name="skinList" ItemsSource="{DynamicResource ResourceKey=skins}" >
+        <ListView ItemsSource="{Binding Source={StaticResource enmPositions}}" FontSize="20" SelectionChanged="ListView_SelectionChanged"/>
+        <ListView Name="skinList" ItemsSource="{Binding ElementName=UserFiles, Path=Files}" >
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Name}" Header="File name"/>
@@ -28,11 +28,6 @@
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Size}" Header="Size"/>
                 </GridView>
             </ListView.View>
-            <ListView.Resources>
-                <collections:ArrayList x:Key="skins">
-                    <local:UserFile Name="SkinOne" Author="Anonimus" Date="21.01.2012" Description="NoDesc" Downloads="-1" Size="999"/>
-                </collections:ArrayList>
-            </ListView.Resources>
         </ListView>
     </DockPanel>
 </Window>
