@@ -16,8 +16,8 @@
             <Button Background="AliceBlue" Content="Сломать"/>
         </StackPanel>
         <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55"/>
-        <ListView ItemsSource="{Binding Source={StaticResource enmPositions}}" FontSize="20" SelectionChanged="ListView_SelectionChanged"/>
-        <ListView Name="skinList" ItemsSource="{Binding ElementName=UserFiles, Path=Files}" >
+        <ListView Name="AircraftListView" ItemsSource="{Binding Source={StaticResource enmPositions}}" FontSize="20" SelectionChanged="ListView_SelectionChanged"/>
+        <ListView Name="UserFilesListView" ItemsSource="{Binding}" >
             <ListView.View>
                 <GridView>
                     <GridViewColumn DisplayMemberBinding="{Binding Path=Name}" Header="File name"/>

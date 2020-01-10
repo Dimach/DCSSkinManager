@@ -21,7 +21,7 @@ namespace DCSSkinManager
         }
     }
 
-    public struct UserFile
+    public class UserFile
     {
         public String Name { get; set; }
         public String Description { get; set; }
@@ -47,13 +47,9 @@ namespace DCSSkinManager
         {
             var url =
                 $@"http://www.digitalcombatsimulator.com/en/files/?PER_PAGE=10000&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) list.Filter}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
-            ServicePointManager.Expect100Continue = true;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 |
-                                                   SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
 
             HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-
 
             using (HttpWebResponse response = (HttpWebResponse) request.GetResponse())
             using (Stream stream = response.GetResponseStream())
