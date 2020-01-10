@@ -29,7 +29,7 @@ namespace DCSSkinManager
         public String Date { get; set; }
         public String Size { get; set; }
         public String Downloads { get; set; }
-        private String DownloadLink { get; set; }
+        public String DownloadLink { get; set; }
     }
 
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
@@ -46,7 +46,7 @@ namespace DCSSkinManager
         public static void LoadUserFiles(UserFiles list)
         {
             var url =
-                $@"http://www.digitalcombatsimulator.com/en/files/?PER_PAGE=100&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) list.Filter}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
+                $@"http://www.digitalcombatsimulator.com/en/files/?PER_PAGE=10000&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) list.Filter}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 |
                                                    SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
@@ -97,6 +97,11 @@ namespace DCSSkinManager
                 {
                     var name = Regex.Match(dataString, "Downloaded:<\\/b>.+<\\/li>").Value;
                     userFile.Downloads = name.Substring(15, name.IndexOf("</li>") - 15).Trim();
+                }
+                {
+                    var name = Regex.Match(dataString, "<a href=\".+\">Download<\\/a>").Value;
+                    var startIndex = name.IndexOf("\"") + 1;
+                    userFile.DownloadLink = name.Substring(startIndex, name.IndexOf("\"", startIndex) - startIndex).Trim();
                 }
                 list.Files.Add(userFile);
             }
