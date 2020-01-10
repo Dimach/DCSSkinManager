@@ -15,6 +15,7 @@
         <e p="obj" t="ExcludeRecursive">
           <e p="Debug" t="Include">
             <e p="App.g.cs" t="Include" />
+            <e p="GeneratedInternalTypeHelper.g.cs" t="Include" />
             <e p="MainWindow.g.cs" t="Include" />
           </e>
         </e>
@@ -26,6 +27,9 @@
           <e p="Settings.settings" t="Include" />
         </e>
         <e p="UserFilesLoader.cs" t="Include" />
+        <e p="Utils" t="Include">
+          <e p="EnumDescriptionConverter.cs" t="Include" />
+        </e>
       </e>
       <e p="DCSSkinManager.sln" t="IncludeFlat" />
       <e p="packages" t="ExcludeRecursive" />
