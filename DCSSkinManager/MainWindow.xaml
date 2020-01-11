@@ -1,33 +1,47 @@
-﻿<Window x:Class="DCSSkinManager.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DCSSkinManager"
-        xmlns:utils="clr-namespace:DCSSkinManager.Utils"
-        xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+﻿<Controls:MetroWindow x:Class="DCSSkinManager.MainWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:local="clr-namespace:DCSSkinManager"
+                      xmlns:utils="clr-namespace:DCSSkinManager.Utils"
+                      xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
+                      mc:Ignorable="d"
+                      GlowBrush="{DynamicResource AccentColorBrush}"
+                      WindowStartupLocation="CenterScreen"
+                      Title="MainWindow" Height="780" Width="1200">
+    <Window.Resources>
+        <utils:EnumToIconsConverter x:Key="EnumToIconConverter" />
+    </Window.Resources>
     <DockPanel LastChildFill="True">
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <Button Background="AliceBlue" Content="Сохранить" BorderBrush="Black"/>
-            <Button Background="AliceBlue" Content="Загрузить" BorderBrush="Black"/>
-            <Button Background="AliceBlue" Content="Удалить"/>
-            <Button Background="AliceBlue" Content="Сломать"/>
-        </StackPanel>
-        <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55"/>
-        <ListView Name="AircraftListView" ItemsSource="{Binding Source={StaticResource enmPositions}}" FontSize="20" SelectionChanged="ListView_SelectionChanged"/>
-        <ListView Name="UserFilesListView" ItemsSource="{Binding}" >
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Name}" Header="File name"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Author}" Header="Author"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Date}" Header="Date"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Description}" Header="Description"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Downloads}" Header="Downloads"/>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=Size}" Header="Size"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <ItemsControl DockPanel.Dock="Top" DataContext="{Binding Source={StaticResource enmPositions}}" 
+                      ItemsSource="{Binding}">
+
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Width="80"
+                             Height="30"
+                             Click="OnModuleButtonClick">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Path=., Converter={StaticResource EnumToIconConverter}}" Width="20" Height="20"/>
+                            <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55" IsIndeterminate="True"/>
+        <DataGrid Name="UserFilesListView" ItemsSource="{Binding ElementName=FilesHolder, Path=UserFiles}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Path=Name}" Header="Name" Width="200"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </DockPanel>
-</Window>
+</Controls:MetroWindow>
+    
