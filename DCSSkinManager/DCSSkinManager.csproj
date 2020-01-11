@@ -120,5 +120,10 @@
     <Resource Include="Icons\SU27.png" />
     <Resource Include="Icons\SU33.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="7z.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
