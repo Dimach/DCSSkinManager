@@ -43,6 +43,7 @@ namespace DCSSkinManager
                 ExecuteDelegate(parameter);
         }
     }
+
     public class AccentColorMenuData
     {
         public string Name { get; set; }
@@ -53,7 +54,11 @@ namespace DCSSkinManager
 
         public ICommand ChangeAccentCommand
         {
-            get { return this.changeAccentCommand ?? (changeAccentCommand = new SimpleCommand { CanExecuteDelegate = x => true, ExecuteDelegate = x => this.DoChangeTheme(x) }); }
+            get
+            {
+                return this.changeAccentCommand ?? (changeAccentCommand = new SimpleCommand
+                           {CanExecuteDelegate = x => true, ExecuteDelegate = x => this.DoChangeTheme(x)});
+            }
         }
 
         protected virtual void DoChangeTheme(object sender)
@@ -74,9 +79,40 @@ namespace DCSSkinManager
         }
     }
 
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        private ICommand _moduleClickCommand;
+
+        public ObservableCollection<UserFile> UserFiles { get; } = new ObservableCollection<UserFile>()
+        {
+            new UserFile()
+            {
+                Name = "TEST", Description = "TEST", Author = "THNDF", DownloadLink = "www.www.www",
+                Date = "21.22.2222", Downloads = "0", Size = "5"
+            },
+            new UserFile()
+            {
+                Name = "TEST2", Description = "TEST2", Author = "AAA", DownloadLink = "www.www.www",
+                Date = "21.22.2222", Downloads = "0", Size = "5"
+            },
+            new UserFile()
+            {
+                Name = "TEST3", Description = "TEST3", Author = "CSDFSDF", DownloadLink = "www.www.www",
+                Date = "21.22.2222", Downloads = "0", Size = "5"
+            },
+            new UserFile()
+            {
+                Name = "TEST4", Description = "TEST4", Author = "BBCC", DownloadLink = "www.www.www",
+                Date = "21.22.2222", Downloads = "0", Size = "5"
+            },
+        };
+
+        public ICommand ModuleClickCommand => _moduleClickCommand ?? (_moduleClickCommand = new SimpleCommand()
+        {
+            CanExecuteDelegate = o => true,
+            ExecuteDelegate = OnModuleButtonClick
+        });
+
         public List<AccentColorMenuData> AccentColors { get; set; }
         public List<AppThemeMenuData> AppThemes { get; set; }
 
@@ -84,33 +120,33 @@ namespace DCSSkinManager
         {
             // create accent color menu items for the demo
             this.AccentColors = ThemeManager.Accents
-                .Select(a => new AccentColorMenuData() { Name = a.Name, ColorBrush = a.Resources["AccentColorBrush"] as Brush })
+                .Select(a => new AccentColorMenuData()
+                    {Name = a.Name, ColorBrush = a.Resources["AccentColorBrush"] as Brush})
                 .ToList();
 
             // create metro theme color menu items for the demo
             this.AppThemes = ThemeManager.AppThemes
-                .Select(a => new AppThemeMenuData() { Name = a.Name, BorderColorBrush = a.Resources["BlackColorBrush"] as Brush, ColorBrush = a.Resources["WhiteColorBrush"] as Brush })
+                .Select(a => new AppThemeMenuData()
+                {
+                    Name = a.Name, BorderColorBrush = a.Resources["BlackColorBrush"] as Brush,
+                    ColorBrush = a.Resources["WhiteColorBrush"] as Brush
+                })
                 .ToList();
         }
 
-        protected bool Set<T>(ref T field, T newValue = default(T), [CallerMemberName] string propertyName = null)
+        private void OnModuleButtonClick(object sender)
         {
-            if (EqualityComparer<T>.Default.Equals(field, newValue))
+            if (sender is UnitType craft)
             {
-                return false;
+                var userFiles = new UserFiles(craft);
+                DataLoader.LoadUserFiles(userFiles);
+                Load(userFiles);
             }
-
-            field = newValue;
-
-            this.OnPropertyChanged(propertyName);
-
-            return true;
         }
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public void Load(UserFiles files)
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            UserFiles.Clear();
+            files.Files.ForEach(UserFiles.Add);
         }
     }
 }
