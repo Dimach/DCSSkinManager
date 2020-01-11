@@ -23,15 +23,7 @@ namespace DCSSkinManager.Utils
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is string unitIconPath)
-            {
-                return Enum.GetValues(typeof(UnitType)).Cast<UnitType>().Single(
-                    x => string.Equals(unitIconPath.Replace("Icons\\", String.Empty).Replace(".img", String.Empty),
-                        x.ToString("G"))
-                );
-            }
-
-            return null;
+            throw new NotImplementedException();
         }
     }
 }

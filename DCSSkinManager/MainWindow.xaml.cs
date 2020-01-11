@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace DCSSkinManager
 {
@@ -14,6 +15,7 @@ namespace DCSSkinManager
         public Holder FilesHolder = new Holder();
         public MainWindow()
         {
+            DataContext = new MainWindowViewModel(DialogCoordinator.Instance);
             InitializeComponent();
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 |
