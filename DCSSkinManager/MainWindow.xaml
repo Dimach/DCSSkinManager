@@ -12,6 +12,18 @@
                       WindowStartupLocation="CenterScreen"
                       Title="MainWindow" Height="780" Width="1200">
     <Window.Resources>
+        <Ellipse x:Key="AppThemeMenuIcon"
+                 Width="16"
+                 Height="16"
+                 x:Shared="False"
+                 Fill="{Binding ColorBrush, Mode=OneWay}"
+                 Stroke="{Binding BorderColorBrush, Mode=OneWay}"
+                 StrokeThickness="1" />
+        <Ellipse x:Key="AccentMenuIcon"
+                 Width="16"
+                 Height="16"
+                 x:Shared="False"
+                 Fill="{Binding ColorBrush, Mode=OneWay}" />
         <Style x:Key="AppThemeMenuItemStyle"
                BasedOn="{StaticResource MetroMenuItem}"
                TargetType="{x:Type MenuItem}">
