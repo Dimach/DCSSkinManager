@@ -9,8 +9,7 @@ namespace DCSSkinManager.Utils
 {
     public class EnumDescriptionTypeConverter : EnumConverter
     {
-        public EnumDescriptionTypeConverter(Type type)
-            : base(type)
+        public EnumDescriptionTypeConverter(Type type) : base(type)
         {
         }
         public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
@@ -33,6 +32,7 @@ namespace DCSSkinManager.Utils
             return base.ConvertTo(context, culture, value, destinationType);
         }
     }
+
     public class EnumCollectionExtension : MarkupExtension
     {
         public Type EnumType { get; set; }

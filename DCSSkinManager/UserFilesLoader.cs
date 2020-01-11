@@ -33,19 +33,65 @@ namespace DCSSkinManager
         public String Downloads { get; set; }
         public String DownloadLink { get; set; }
         public String Id { get; set; }
+        public bool Downloaded { get; set; }
+    }
+
+    public class DirectoryAttribute : Attribute
+    {
+        private string directory;
+        public static readonly DirectoryAttribute Default = new DirectoryAttribute("");
+
+        public DirectoryAttribute(string directory)
+        {
+            this.directory = directory;
+        }
+
+        public string Directory => directory;
+
+        public override bool IsDefaultAttribute()
+        {
+            return Equals(Default);
+        }
     }
 
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
     public enum UnitType
     {
-        [Description("Ka-50")] KA50 = 31,
-        [Description("Su-27")] SU27 = 23,
-        [Description("Su-33")] SU33 = 28,
-        [Description("Su-25")] SU25 = 24
+        [Description("Ka-50"), DirectoryAttribute("ka-50")]
+        KA50 = 31,
+
+        [Description("Su-27"), DirectoryAttribute("su-27")]
+        SU27 = 23,
+
+        [Description("Su-33"), DirectoryAttribute("ka-33")]
+        SU33 = 28,
+
+        [Description("Su-25"), DirectoryAttribute("ka-25")]
+        SU25 = 24
     }
 
-    public class DataLoader
+    public static class DataLoader
     {
+        public static String GetDirectory(this UnitType unitType)
+        {
+            var customAttributes = (DirectoryAttribute[]) typeof(UnitType).GetField(unitType.ToString()).GetCustomAttributes(typeof(DirectoryAttribute), false);
+            return customAttributes.Length > 0 ? customAttributes[0].Directory : String.Empty;
+        }
+
+        public static void LoadDownloadedFiles(UserFiles list, String dcsInstallFolder)
+        {
+            var dirs = Directory.GetDirectories($@"{dcsInstallFolder}\{list.Filter.GetDirectory()}").Select(dir =>
+            {
+                dir = dir.Substring(dir.LastIndexOf('\\') + 1);
+                return dir.Substring(0, dir.IndexOf('.'));
+            }).ToArray();
+            foreach (var file in list.Files)
+            {
+                if (dirs.Any(str => str.Equals(file.Id)))
+                    file.Downloaded = true;
+            }
+        }
+
         public static void LoadUserFiles(UserFiles list)
         {
             var url = $@"https://www.digitalcombatsimulator.com/en/files/?PER_PAGE=10000&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) list.Filter}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
@@ -109,7 +155,7 @@ namespace DCSSkinManager
 
         public static void installSkin(UserFile file, String directory)
         {
-            SevenZipBase.SetLibraryPath(@"C:\Program Files (x86)\7-Zip\7z.dll");
+            SevenZipBase.SetLibraryPath($@"{AppDomain.CurrentDomain.BaseDirectory}\7z.dll");
             var url = $@"https://www.digitalcombatsimulator.com{file.DownloadLink}";
 
             HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
@@ -151,7 +197,7 @@ namespace DCSSkinManager
                     foreach (var skin in skinList)
                     {
                         var directoryName = $@"{directory}\{skin.directoryName}";
-                        if(Directory.Exists(directoryName))
+                        if (Directory.Exists(directoryName))
                             Directory.Delete(directoryName, true);
                         Directory.CreateDirectory(directoryName);
                         foreach (var i in skin.indexes)
