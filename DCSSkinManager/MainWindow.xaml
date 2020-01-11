@@ -11,7 +11,7 @@
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       WindowStartupLocation="CenterScreen"
                       d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
-                      Title="MainWindow" Height="780" Width="1200">
+                      Title="DCS Skin Manager (dev alpha)" Height="780" Width="1200">
     <Window.Resources>
         <Ellipse x:Key="AppThemeMenuIcon"
                  Width="16"
@@ -45,14 +45,14 @@
         </Style>
         <utils:EnumToIconsConverter x:Key="EnumToIconConverter" />
         <DataTemplate x:Key="ModuleButtonTemplate">
-            <Button Width="80"
+            <Button Width="70"
                     Height="30"
                     Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ModuleClickCommand}"
                     CommandParameter="{Binding}"
+                    Style="{DynamicResource ChromelessButtonStyle}"
                     d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="{Binding Path=., Converter={StaticResource EnumToIconConverter}}" Width="20"
-                           Height="20" />
+                    <Image Source="{Binding Path=., Converter={StaticResource EnumToIconConverter}}" Stretch="Fill" />
                     <TextBlock Text="{Binding}" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
@@ -68,7 +68,7 @@
             </ItemsControl.ItemsPanel>
         </ItemsControl>
         <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55" IsIndeterminate="True" />
-        <DataGrid Name="UserFilesListView" ItemsSource="{Binding UserFiles, Mode=OneWay}" AutoGenerateColumns="True" />
+        <DataGrid Name="UserFilesListView" ItemsSource="{Binding UserFiles, Mode=OneWay}" AutoGenerateColumns="True" MaxColumnWidth="120" />
     </DockPanel>
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands ShowLastSeparator="False">
