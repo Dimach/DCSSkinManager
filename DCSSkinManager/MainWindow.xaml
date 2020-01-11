@@ -10,6 +10,7 @@
                       mc:Ignorable="d"
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       WindowStartupLocation="CenterScreen"
+                      d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
                       Title="MainWindow" Height="780" Width="1200">
     <Window.Resources>
         <Ellipse x:Key="AppThemeMenuIcon"
@@ -18,69 +19,68 @@
                  x:Shared="False"
                  Fill="{Binding ColorBrush, Mode=OneWay}"
                  Stroke="{Binding BorderColorBrush, Mode=OneWay}"
-                 StrokeThickness="1" />
+                 StrokeThickness="1"
+                 d:DataContext="{d:DesignInstance Type=local:AppThemeMenuData}" />
         <Ellipse x:Key="AccentMenuIcon"
                  Width="16"
                  Height="16"
                  x:Shared="False"
-                 Fill="{Binding ColorBrush, Mode=OneWay}" />
+                 Fill="{Binding ColorBrush, Mode=OneWay}"
+                 d:DataContext="{d:DesignInstance Type=local:AccentColorMenuData}" />
         <Style x:Key="AppThemeMenuItemStyle"
                BasedOn="{StaticResource MetroMenuItem}"
-               TargetType="{x:Type MenuItem}">
+               TargetType="{x:Type MenuItem}"
+               d:DataContext="{d:DesignInstance Type=local:AppThemeMenuData}">
             <Setter Property="Command" Value="{Binding ChangeAccentCommand}" />
             <Setter Property="Header" Value="{Binding Name, Mode=OneWay}" />
             <Setter Property="Icon" Value="{StaticResource AppThemeMenuIcon}" />
         </Style>
         <Style x:Key="AccentColorMenuItemStyle"
                BasedOn="{StaticResource MetroMenuItem}"
-               TargetType="{x:Type MenuItem}">
+               TargetType="{x:Type MenuItem}"
+               d:DataContext="{d:DesignInstance Type=local:AccentColorMenuData}">
             <Setter Property="Command" Value="{Binding ChangeAccentCommand}" />
             <Setter Property="Header" Value="{Binding Name, Mode=OneWay}" />
             <Setter Property="Icon" Value="{StaticResource AccentMenuIcon}" />
         </Style>
         <utils:EnumToIconsConverter x:Key="EnumToIconConverter" />
+        <DataTemplate x:Key="ModuleButtonTemplate">
+            <Button Width="80"
+                    Height="30"
+                    Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ModuleClickCommand}"
+                    CommandParameter="{Binding}"
+                    d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{Binding Path=., Converter={StaticResource EnumToIconConverter}}" Width="20"
+                           Height="20" />
+                    <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </DataTemplate>
     </Window.Resources>
     <DockPanel LastChildFill="True">
-        <ItemsControl DockPanel.Dock="Top" DataContext="{Binding Source={StaticResource enmPositions}}" 
-                      ItemsSource="{Binding}">
-
+        <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Source={StaticResource enmPositions}}"
+                      ItemTemplate="{StaticResource ModuleButtonTemplate}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Button Width="80"
-                             Height="30"
-                             Click="OnModuleButtonClick">
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{Binding Path=., Converter={StaticResource EnumToIconConverter}}" Width="20" Height="20"/>
-                            <TextBlock Text="{Binding}" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55" IsIndeterminate="True"/>
-        <DataGrid Name="UserFilesListView" ItemsSource="{Binding ElementName=FilesHolder, Path=UserFiles}" AutoGenerateColumns="False">
-            <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Path=Name}" Header="Name" Width="200"/>
-            </DataGrid.Columns>
-        </DataGrid>
+        <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55" IsIndeterminate="True" />
+        <DataGrid Name="UserFilesListView" ItemsSource="{Binding UserFiles, Mode=OneWay}" AutoGenerateColumns="True" />
     </DockPanel>
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands ShowLastSeparator="False">
             <Menu HorizontalAlignment="Left"
                   VerticalAlignment="Stretch">
                 <MenuItem Header="Theme"
-                      ItemContainerStyle="{StaticResource AppThemeMenuItemStyle}"
-                      ItemsSource="{Binding AppThemes, Mode=OneWay}" />
-            <MenuItem Header="Accent"
-                      ItemContainerStyle="{StaticResource AccentColorMenuItemStyle}"
-                      ItemsSource="{Binding AccentColors, Mode=OneWay}" />
+                          ItemContainerStyle="{StaticResource AppThemeMenuItemStyle}"
+                          ItemsSource="{Binding AppThemes, Mode=OneWay}" />
+                <MenuItem Header="Accent"
+                          ItemContainerStyle="{StaticResource AccentColorMenuItemStyle}"
+                          ItemsSource="{Binding AccentColors, Mode=OneWay}" />
             </Menu>
         </Controls:WindowCommands>
     </Controls:MetroWindow.RightWindowCommands>
 </Controls:MetroWindow>
-    
