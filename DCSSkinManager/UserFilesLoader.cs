@@ -7,6 +7,8 @@ using System.Linq;
 using System.Net;
 using DCSSkinManager.Utils;
 using System.Text.RegularExpressions;
+using SevenZip;
+
 
 namespace DCSSkinManager
 {
@@ -30,6 +32,7 @@ namespace DCSSkinManager
         public String Size { get; set; }
         public String Downloads { get; set; }
         public String DownloadLink { get; set; }
+        public String Id { get; set; }
     }
 
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
@@ -45,8 +48,7 @@ namespace DCSSkinManager
     {
         public static void LoadUserFiles(UserFiles list)
         {
-            var url =
-                $@"http://www.digitalcombatsimulator.com/en/files/?PER_PAGE=10000&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) list.Filter}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
+            var url = $@"https://www.digitalcombatsimulator.com/en/files/?PER_PAGE=10000&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) list.Filter}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
 
             HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
@@ -70,12 +72,14 @@ namespace DCSSkinManager
                 {
                     var name = Regex.Match(dataString, "<a href=\".+\">.+<\\/a>").Value;
                     var startIndex = name.IndexOf(">") + 1;
-                    userFile.Name = name.Substring(startIndex, name.IndexOf("</a>") - startIndex).Trim();
+                    userFile.Name = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("</a>") - startIndex).Trim());
+                    startIndex = name.IndexOf("\"") + 1;
+                    userFile.Id = name.Substring(startIndex, name.IndexOf("\"", startIndex) - startIndex).Replace("/en/files/", "").Replace("/", "");
                 }
                 {
                     var name = Regex.Match(dataString, "Author - <a href=\".+\">.+<\\/a>").Value;
                     var startIndex = name.IndexOf(">") + 1;
-                    userFile.Author = name.Substring(startIndex, name.IndexOf("</a>") - startIndex).Trim();
+                    userFile.Author = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("</a>") - startIndex).Trim());
                 }
                 {
                     var name = Regex.Match(dataString, "Date - .+<\\/div>").Value;
@@ -84,7 +88,7 @@ namespace DCSSkinManager
                 {
                     var name = Regex.Match(dataString, "<div class=\"row file-preview-text\">[\\s\\S]+?<\\/div>").Value;
                     var startIndex = name.IndexOf(">", 40) + 1;
-                    userFile.Description = name.Substring(startIndex, name.IndexOf("</div>") - startIndex).Replace("\n", "").Replace("\n", "").Trim().Replace("<br />", "\n");
+                    userFile.Description = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("</div>") - startIndex).Replace("\n", "").Replace("\n", "").Trim().Replace("<br />", "\n"));
                 }
                 {
                     var name = Regex.Match(dataString, "Size:<\\/b>.+<\\/li>").Value;
@@ -97,9 +101,82 @@ namespace DCSSkinManager
                 {
                     var name = Regex.Match(dataString, "<a href=\".+\">Download<\\/a>").Value;
                     var startIndex = name.IndexOf("\"") + 1;
-                    userFile.DownloadLink = name.Substring(startIndex, name.IndexOf("\"", startIndex) - startIndex).Trim();
+                    userFile.DownloadLink = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("\"", startIndex) - startIndex).Trim());
                 }
                 list.Files.Add(userFile);
+            }
+        }
+
+        public static void installSkin(UserFile file, String directory)
+        {
+            SevenZipBase.SetLibraryPath(@"C:\Program Files (x86)\7-Zip\7z.dll");
+            var url = $@"https://www.digitalcombatsimulator.com{file.DownloadLink}";
+
+            HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+            using (HttpWebResponse response = (HttpWebResponse) request.GetResponse())
+            using (var stream = response.GetResponseStream())
+            {
+                var memory = new MemoryStream();
+                var arr = new byte[65536];
+                while (true)
+                {
+                    var count = stream.Read(arr, 0, arr.Length);
+                    if (count == 0)
+                        break;
+                    memory.Write(arr, 0, count);
+                }
+
+                using (var extractor = new SevenZipExtractor(memory))
+                {
+                    var skinList = new List<Skin>();
+                    foreach (var archiveFile in extractor.ArchiveFileData)
+                    {
+                        if (!archiveFile.IsDirectory && archiveFile.FileName.EndsWith("\\description.lua"))
+                        {
+                            var archivePath = archiveFile.FileName.Substring(0, archiveFile.FileName.Length - 16);
+                            skinList.Add(new Skin(archivePath + "\\", file.Id + "." + archivePath.Substring(archivePath.LastIndexOf("\\") + 1)));
+                        }
+                    }
+
+                    foreach (var archiveFile in extractor.ArchiveFileData)
+                    {
+                        if (!archiveFile.IsDirectory)
+                        {
+                            skinList.FirstOrDefault(skin => archiveFile.FileName.StartsWith(skin.archivePath))?.indexes?.Add(archiveFile.Index);
+                        }
+                    }
+
+                    foreach (var skin in skinList)
+                    {
+                        var directoryName = $@"{directory}\{skin.directoryName}";
+                        if(Directory.Exists(directoryName))
+                            Directory.Delete(directoryName, true);
+                        Directory.CreateDirectory(directoryName);
+                        foreach (var i in skin.indexes)
+                        {
+                            var archiveFileName = extractor.ArchiveFileNames[i];
+                            using (var fileStream = new FileStream($@"{directoryName}\{archiveFileName.Substring(archiveFileName.LastIndexOf("\\") + 1)}", FileMode.Create))
+                            {
+                                extractor.ExtractFile(i, fileStream);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private class Skin
+        {
+            public String archivePath;
+            public String directoryName;
+            public List<int> indexes = new List<int>();
+
+            public Skin(String archivePath, String directoryName)
+            {
+                this.archivePath = archivePath;
+                this.directoryName = directoryName;
             }
         }
     }
