@@ -114,9 +114,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Su27.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Icons\A10C.png" />
     <Resource Include="Icons\KA50.png" />
     <Resource Include="Icons\SU25.png" />
