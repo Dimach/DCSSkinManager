@@ -8,12 +8,19 @@
                       xmlns:utils="clr-namespace:DCSSkinManager.Utils"
                       xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
                       xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                      xmlns:converter="clr-namespace:MahApps.Metro.IconPacks.Converter;assembly=MahApps.Metro.IconPacks.Core"
+                      xmlns:mah="http://metro.mahapps.com/winfx/xaml/shared"
                       mc:Ignorable="d"
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       WindowStartupLocation="CenterScreen"
                       d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
                       Title="DCS Skin Manager (dev alpha)" Height="780" Width="1200">
     <Window.Resources>
+        <ImageSource x:Key="mainSample">Samples/Main.jpg</ImageSource>
+        <ImageSource x:Key="sample1">Samples/Sample1.jpg</ImageSource>
+        <ImageSource x:Key="sample2">Samples/Sample2.jpg</ImageSource>
+        <ImageSource x:Key="sample3">Samples/Sample3.jpg</ImageSource>
+        <ImageSource x:Key="sample4">Samples/Sample4.jpg</ImageSource>
         <Ellipse x:Key="AppThemeMenuIcon"
                  Width="16"
                  Height="16"
@@ -45,43 +52,145 @@
             <Setter Property="Icon" Value="{StaticResource AccentMenuIcon}" />
         </Style>
         <utils:EnumToIconsConverter x:Key="EnumToIconConverter" />
-        <DataTemplate x:Key="ModuleButtonTemplate">
-            <ToggleButton Width="90"
-                    Height="30"
-                    Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ModuleClickCommand}"
-                    CommandParameter="{Binding}"
-                    Style="{DynamicResource ChromelessButtonStyle}"
-                    d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Image Source="{Binding Path=., Converter={StaticResource EnumToIconConverter}}" Stretch="Fill" />
-                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-                </StackPanel>
-            </ToggleButton>
+        <!--  This is the template for all menu items. In this sample we use the glyph items.  -->
+        <DataTemplate x:Key="HamburgerMenuItem" DataType="{x:Type Controls:HamburgerMenuGlyphItem}">
+            <DockPanel Height="48" LastChildFill="True">
+                <Grid x:Name="IconPart"
+                      Width="48"
+                      DockPanel.Dock="Left">
+                    <Image Margin="12"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Source="{Binding Path=., Converter={StaticResource EnumToIconConverter}}"
+                           Stretch="UniformToFill" />
+                </Grid>
+                <TextBlock x:Name="TextPart"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Text="{Binding}" />
+            </DockPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="UserFileMenuItem" DataType="{x:Type Controls:HamburgerMenuGlyphItem}">
+            <DockPanel Height="48" LastChildFill="True">
+                    <Image Margin="12"
+                           MaxWidth="30"
+                           DockPanel.Dock="Left"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Source="{DynamicResource mainSample}"
+                           Stretch="UniformToFill" />
+                    <TextBlock x:Name="TextPart"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Text="{Binding Name}" />
+                </DockPanel>
+        </DataTemplate>
+
+        <Style x:Key="HamburgerMenuCreatorsItemStyle"
+               BasedOn="{StaticResource HamburgerMenuItemStyle}"
+               TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Controls:ItemHelper.ActiveSelectionBackgroundBrush" Value="Transparent" />
+            <Setter Property="Controls:ItemHelper.ActiveSelectionForegroundBrush"
+                    Value="{DynamicResource AccentBaseColorBrush}" />
+            <Setter Property="Controls:ItemHelper.DisabledForegroundBrush" Value="{DynamicResource GrayNormalBrush}" />
+            <Setter Property="Controls:ItemHelper.DisabledSelectedBackgroundBrush" Value="Transparent" />
+            <Setter Property="Controls:ItemHelper.DisabledSelectedForegroundBrush"
+                    Value="{DynamicResource GrayNormalBrush}" />
+            <Setter Property="Controls:ItemHelper.HoverBackgroundBrush" Value="{DynamicResource GrayBrush9}" />
+            <Setter Property="Controls:ItemHelper.HoverSelectedBackgroundBrush" Value="{DynamicResource GrayBrush9}" />
+            <Setter Property="Controls:ItemHelper.SelectedBackgroundBrush" Value="Transparent" />
+            <Setter Property="Controls:ItemHelper.SelectedForegroundBrush"
+                    Value="{DynamicResource AccentBaseColorBrush}" />
+        </Style>
+        <Style x:Key="HamburgerMenuCreatorsStyle"
+               BasedOn="{StaticResource {x:Type Controls:HamburgerMenu}}"
+               TargetType="{x:Type Controls:HamburgerMenu}">
+            <Setter Property="ItemContainerStyle" Value="{StaticResource HamburgerMenuCreatorsItemStyle}" />
+            <Setter Property="OptionsItemContainerStyle" Value="{StaticResource HamburgerMenuCreatorsItemStyle}" />
+            <Setter Property="PaneBackground" Value="{DynamicResource WhiteBrush}" />
+            <Setter Property="PaneForeground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="ShowSelectionIndicator" Value="True" />
+        </Style>
+        <DataTemplate x:Key="UserFileContent">
+            <DockPanel LastChildFill="False">
+                <Border DockPanel.Dock="Top">
+                    <TextBlock x:Name="Header"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontSize="24"
+                                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Name}" />
+                </Border>
+                <Controls:FlipView DockPanel.Dock="Bottom" MouseHoverBorderEnabled="False" IsBannerEnabled="False">
+                    <Controls:FlipView.Items>
+                        <Image Source="{StaticResource mainSample}" />
+                        <Image Source="{StaticResource sample1}" />
+                        <Image Source="{StaticResource sample2}" />
+                        <Image Source="{StaticResource sample3}" />
+                        <Image Source="{StaticResource sample4}" />
+                    </Controls:FlipView.Items>
+                </Controls:FlipView>
+                <TextBlock DockPanel.Dock="Left" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Description}" MaxWidth="600" TextWrapping="Wrap"/>
+                <Grid DockPanel.Dock="Right" Width="200" Height="100" VerticalAlignment="Top" Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="Author"/>
+                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Author}"/>
+                    <TextBlock Grid.Column="0" Grid.Row="1" Text="Downloads"/>
+                    <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Downloads}"/>
+                    <TextBlock Grid.Column="0" Grid.Row="2" Text="Author"/>
+                    <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Author}"/>
+                    <TextBlock Grid.Column="0" Grid.Row="3" Text="Size"/>
+                    <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Size}"/>
+                    <TextBlock Grid.Column="0" Grid.Row="4" Text="Date"/>
+                    <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Date}"/>
+                </Grid>
+            </DockPanel>
         </DataTemplate>
     </Window.Resources>
-    <DockPanel LastChildFill="True">
-        <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding Source={StaticResource enmPositions}}"
-                      ItemTemplate="{StaticResource ModuleButtonTemplate}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
-        <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55" IsIndeterminate="True" />
-        <DataGrid Name="UserFilesListView" ItemsSource="{Binding UserFiles, Mode=OneWay}" AutoGenerateColumns="False"
-                  RowHeight="16" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True" GridLinesVisibility="All" >
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Path=Name}" Width="4*"></DataGridTextColumn>
-                <DataGridTextColumn Header="Description" Binding="{Binding Path=Description}" Width="9*"></DataGridTextColumn>
-                <DataGridTextColumn Header="Author" Binding="{Binding Path=Author}" Width="3*"></DataGridTextColumn>
-                <DataGridTextColumn Header="Date" Binding="{Binding Path=Date}" Width="2*"></DataGridTextColumn>
-                <DataGridTextColumn Header="Downloads" Binding="{Binding Path=Downloads}" Width="2*"></DataGridTextColumn>
-                <DataGridTextColumn Header="Size" Binding="{Binding Path=Size}" Width="2*"></DataGridTextColumn>
-                <DataGridCheckBoxColumn Header="Installed" Binding="{Binding Path=Downloaded}" IsReadOnly="False" Width="2*"></DataGridCheckBoxColumn>
-            </DataGrid.Columns>
-        </DataGrid>
-    </DockPanel>
+    <Controls:HamburgerMenu
+        x:Name="AircraftMenuControl"
+        ItemCommand="{Binding ModuleClickCommand}"
+        ItemCommandParameter="{Binding ElementName=AircraftMenuControl, Path=SelectedItem}"
+        ItemsSource="{Binding Source={StaticResource enmPositions}}"
+        ItemTemplate="{StaticResource HamburgerMenuItem}"
+        DisplayMode="CompactOverlay"
+        HamburgerVisibility="Visible">
+        <Controls:HamburgerMenu.HamburgerMenuHeaderTemplate>
+            <DataTemplate>
+                <TextBlock HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Foreground="{DynamicResource MetroDataGrid.HighlightTextBrush}"
+                           Text="Aircraft units" />
+            </DataTemplate>
+        </Controls:HamburgerMenu.HamburgerMenuHeaderTemplate>
+        <!--  Content  -->
+        <Controls:HamburgerMenu.ContentTemplate>
+            <DataTemplate>
+                <Controls:HamburgerMenu HamburgerVisibility="Collapsed"
+                                        x:Name="UserFileMenuControl"
+                                        HamburgerWidth="48"
+                                        OpenPaneLength="300"
+                                        IsPaneOpen="True"
+                                        ItemTemplate="{StaticResource UserFileMenuItem}"
+                                        SelectedIndex="0"
+                                        Style="{StaticResource HamburgerMenuCreatorsStyle}"
+                                        ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay, Path=DataContext.UserFiles}"
+                                        ContentTemplate="{StaticResource UserFileContent}">
+                </Controls:HamburgerMenu>
+            </DataTemplate>
+        </Controls:HamburgerMenu.ContentTemplate>
+    </Controls:HamburgerMenu>
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands ShowLastSeparator="False">
             <Menu HorizontalAlignment="Left"
@@ -94,7 +203,7 @@
                           ItemsSource="{Binding AccentColors, Mode=OneWay}" />
             </Menu>
             <Button>
-                <iconPacks:PackIconIonicons Kind="SettingsMD"/>
+                <iconPacks:PackIconIonicons Kind="SettingsMD" />
             </Button>
         </Controls:WindowCommands>
     </Controls:MetroWindow.RightWindowCommands>

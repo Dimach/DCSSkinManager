@@ -190,11 +190,17 @@
     <Content Include="7z.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Samples\Main.jpg" />
+    <Resource Include="Samples\Sample1.jpg" />
+    <Resource Include="Samples\Sample2.jpg" />
+    <Resource Include="Samples\Sample3.jpg" />
+    <Resource Include="Samples\Sample4.jpg" />
     <Resource Include="Icons\F14B.png" />
     <Resource Include="Icons\F16C.png" />
     <Resource Include="Icons\FA18C.png" />
     <Resource Include="Icons\M2000C.png" />
     <Resource Include="Icons\MI8MTV2.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

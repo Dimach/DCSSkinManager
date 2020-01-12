@@ -41,6 +41,10 @@ namespace DCSSkinManager
         {
             UnitType = unitType;
         }
+
+        public UserFile()
+        {
+        }
     }
 
     public class DirectoryAttribute : Attribute

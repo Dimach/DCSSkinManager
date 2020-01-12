@@ -82,28 +82,35 @@ namespace DCSSkinManager
     public class MainWindowViewModel
     {
         private ICommand _moduleClickCommand;
-
+        public ObservableCollection<HamburgerMenuGlyphItem> TestCollection { get; } = new ObservableCollection<HamburgerMenuGlyphItem>()
+        {
+            new HamburgerMenuGlyphItem()
+            {
+                Glyph = "Icons/SU33.png",
+                Label = "TEST S33"
+            }
+        };
         public ObservableCollection<UserFile> UserFiles { get; } = new ObservableCollection<UserFile>()
         {
             new UserFile(UnitType.KA50)
             {
-                Name = "TEST", Description = "TEST", Author = "THNDF", DownloadLink = "www.www.www",
-                Date = "21.22.2222", Downloads = "0", Size = "5"
+                Name = "FUCKINGLONGNAMEWHATNEVERENDBLYAT", Description = "TEST", Author = "THNDF", DownloadLink = "www.www.www",
+                Date = "21.22.123", Downloads = "0", Size = "5"
             },
             new UserFile(UnitType.F14B)
             {
                 Name = "TEST2", Description = "TEST2", Author = "AAA", DownloadLink = "www.www.www",
-                Date = "21.22.2222", Downloads = "0", Size = "5"
+                Date = "21.22.321", Downloads = "0", Size = "5"
             },
             new UserFile(UnitType.MI8MTV2)
             {
                 Name = "TEST3", Description = "TEST3", Author = "CSDFSDF", DownloadLink = "www.www.www",
-                Date = "21.22.2222", Downloads = "0", Size = "5"
+                Date = "21.22.5342", Downloads = "0", Size = "5"
             },
             new UserFile(UnitType.F16C)
             {
                 Name = "TEST4", Description = "TEST4", Author = "BBCC", DownloadLink = "www.www.www",
-                Date = "21.22.2222", Downloads = "0", Size = "5"
+                Date = "21.22.5435", Downloads = "0", Size = "5"
             },
         };
 
