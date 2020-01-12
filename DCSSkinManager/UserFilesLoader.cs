@@ -36,6 +36,7 @@ namespace DCSSkinManager
         public String Id { get; set; }
         public bool Downloaded { get; set; }
         public String[] Preview { get; set; }
+
         public UserFile(UnitType unitType)
         {
             UnitType = unitType;
@@ -58,6 +59,9 @@ namespace DCSSkinManager
         [Description("Ka-50"), DirectoryAttribute("ka-50")]
         KA50 = 31,
 
+        [Description("Mi-8MTV2"), DirectoryAttribute("mi-8mt")]
+        MI8MTV2 = 93,
+        
         [Description("Su-27"), DirectoryAttribute("su-27")]
         SU27 = 23,
 
@@ -65,12 +69,29 @@ namespace DCSSkinManager
         SU33 = 28,
 
         [Description("Su-25"), DirectoryAttribute("ka-25")]
-        SU25 = 24
+        SU25 = 24,
+
+        [Description("M-2000C"), DirectoryAttribute("M-2000C")]
+        M2000C = 313,
+
+        [Description("F-14B"), DirectoryAttribute("f-14b")]
+        F14B = 545,
+
+        [Description("F-16C"), DirectoryAttribute("F-16C_50")]
+        F16C = 561,
+
+        [Description("F/A-18C"), DirectoryAttribute("FA-18C_hornet")]
+        FA18C = 535,
     }
 
     public class DataLoader
     {
         public String DcsInstallDirectory;
+
+        public DataLoader(string dcsInstallDirectory)
+        {
+            DcsInstallDirectory = dcsInstallDirectory;
+        }
 
         public void CheckDownloadedFiles(UserFiles list)
         {
@@ -104,18 +125,17 @@ namespace DCSSkinManager
         private UserFiles parsePage(UnitType type, String page)
         {
             var list = new UserFiles(type);
-            foreach (var i in page.Split(new[] {"<div class=\"col-xs-10\">"}, StringSplitOptions.None).Skip(1))
+            foreach (var i in page.Split(new[] {"<div class=\"col-xs-2 text-center\">"}, StringSplitOptions.None).Skip(1))
             {
-                var endIndex = i.IndexOf("<script type=\"text/javascript\">");
+                var endIndex = i.IndexOf("class=\"btn btn-default pull-right\">Detail");
                 if (endIndex < 0) continue;
                 var userFile = new UserFile(type);
                 var dataString = i.Substring(0, endIndex);
                 {
-                    var name = Regex.Match(dataString, "<a href=\".+\">.+<\\/a>").Value;
+                    var name = Regex.Match(dataString, "<h2><a href=\".+\">.+<\\/a>").Value.Substring(13);
+                    userFile.Id = name.Substring(0, name.IndexOf("\"")).Replace("/en/files/", "").Replace("/", "");
                     var startIndex = name.IndexOf(">") + 1;
                     userFile.Name = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("</a>") - startIndex).Trim());
-                    startIndex = name.IndexOf("\"") + 1;
-                    userFile.Id = name.Substring(startIndex, name.IndexOf("\"", startIndex) - startIndex).Replace("/en/files/", "").Replace("/", "");
                 }
                 {
                     var name = Regex.Match(dataString, "Author - <a href=\".+\">.+<\\/a>").Value;
@@ -143,6 +163,14 @@ namespace DCSSkinManager
                     var name = Regex.Match(dataString, "<a href=\".+\">Download<\\/a>").Value;
                     var startIndex = name.IndexOf("\"") + 1;
                     userFile.DownloadLink = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("\"", startIndex) - startIndex).Trim());
+                }
+                {
+                    var matches = Regex.Matches(dataString, "<a href=\"\\/upload\\/iblock.+?\"");
+                    userFile.Preview = new String[matches.Count];
+                    for (int j = 0; j < userFile.Preview.Length; j++)
+                    {
+                        userFile.Preview[j] = matches[j].Value.Substring(24, matches[j].Value.Length - 25); ///upload/iblock/
+                    }
                 }
                 list.Files.Add(userFile);
             }
