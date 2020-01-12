@@ -1,9 +1,11 @@
+using System;
 using MahApps.Metro.Controls;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using MahApps.Metro.Controls.Dialogs;
+using SevenZip;
 
 namespace DCSSkinManager
 {
@@ -19,6 +21,7 @@ namespace DCSSkinManager
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 |
                                                    SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
+            SevenZipBase.SetLibraryPath($@"{AppDomain.CurrentDomain.BaseDirectory}\7z.dll");
         }
     }
 }

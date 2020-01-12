@@ -14,17 +14,18 @@ namespace DCSSkinManager
 {
     public class UserFiles
     {
-        public readonly UnitType Filter;
+        public readonly UnitType UnitType;
         public List<UserFile> Files { get; } = new List<UserFile>();
 
-        public UserFiles(UnitType filter)
+        public UserFiles(UnitType unitType)
         {
-            Filter = filter;
+            UnitType = unitType;
         }
     }
 
     public class UserFile
     {
+        public UnitType UnitType { get; set; }
         public String Name { get; set; }
         public String Description { get; set; }
         public String Author { get; set; }
@@ -34,23 +35,21 @@ namespace DCSSkinManager
         public String DownloadLink { get; set; }
         public String Id { get; set; }
         public bool Downloaded { get; set; }
+        public String[] Preview { get; set; }
+
+        public UserFile(UnitType unitType)
+        {
+            UnitType = unitType;
+        }
     }
 
     public class DirectoryAttribute : Attribute
     {
-        private string directory;
-        public static readonly DirectoryAttribute Default = new DirectoryAttribute("");
+        public string Directory;
 
         public DirectoryAttribute(string directory)
         {
-            this.directory = directory;
-        }
-
-        public string Directory => directory;
-
-        public override bool IsDefaultAttribute()
-        {
-            return Equals(Default);
+            Directory = directory;
         }
     }
 
@@ -60,6 +59,9 @@ namespace DCSSkinManager
         [Description("Ka-50"), DirectoryAttribute("ka-50")]
         KA50 = 31,
 
+        [Description("Mi-8MTV2"), DirectoryAttribute("mi-8mt")]
+        MI8MTV2 = 93,
+        
         [Description("Su-27"), DirectoryAttribute("su-27")]
         SU27 = 23,
 
@@ -67,20 +69,33 @@ namespace DCSSkinManager
         SU33 = 28,
 
         [Description("Su-25"), DirectoryAttribute("ka-25")]
-        SU25 = 24
+        SU25 = 24,
+
+        [Description("M-2000C"), DirectoryAttribute("M-2000C")]
+        M2000C = 313,
+
+        [Description("F-14B"), DirectoryAttribute("f-14b")]
+        F14B = 545,
+
+        [Description("F-16C"), DirectoryAttribute("F-16C_50")]
+        F16C = 561,
+
+        [Description("F/A-18C"), DirectoryAttribute("FA-18C_hornet")]
+        FA18C = 535,
     }
 
-    public static class DataLoader
+    public class DataLoader
     {
-        public static String GetDirectory(this UnitType unitType)
+        public String DcsInstallDirectory;
+
+        public DataLoader(string dcsInstallDirectory)
         {
-            var customAttributes = (DirectoryAttribute[]) typeof(UnitType).GetField(unitType.ToString()).GetCustomAttributes(typeof(DirectoryAttribute), false);
-            return customAttributes.Length > 0 ? customAttributes[0].Directory : String.Empty;
+            DcsInstallDirectory = dcsInstallDirectory;
         }
 
-        public static void LoadDownloadedFiles(UserFiles list, String dcsInstallFolder)
+        public void CheckDownloadedFiles(UserFiles list)
         {
-            var dirs = Directory.GetDirectories($@"{dcsInstallFolder}\{list.Filter.GetDirectory()}").Select(dir =>
+            var dirs = Directory.GetDirectories($@"{DcsInstallDirectory}\{list.UnitType.DirectoryName()}").Select(dir =>
             {
                 dir = dir.Substring(dir.LastIndexOf('\\') + 1);
                 var index = dir.IndexOf('.');
@@ -88,14 +103,13 @@ namespace DCSSkinManager
             }).ToArray();
             foreach (var file in list.Files)
             {
-                if (dirs.Any(str => str.Equals(file.Id)))
-                    file.Downloaded = true;
+                file.Downloaded = dirs.Any(str => str.Equals(file.Id));
             }
         }
 
-        public static void LoadUserFiles(UserFiles list)
+        public UserFiles LoadUserFiles(UnitType unit)
         {
-            var url = $@"https://www.digitalcombatsimulator.com/en/files/?PER_PAGE=10000&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) list.Filter}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
+            var url = $@"https://www.digitalcombatsimulator.com/en/files/?PER_PAGE=10000&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) unit}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
 
             HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
@@ -104,24 +118,24 @@ namespace DCSSkinManager
             using (Stream stream = response.GetResponseStream())
             using (StreamReader reader = new StreamReader(stream))
             {
-                parsePage(list, reader.ReadToEnd());
+                return parsePage(unit, reader.ReadToEnd());
             }
         }
 
-        public static void parsePage(UserFiles list, String page)
+        private UserFiles parsePage(UnitType type, String page)
         {
-            foreach (var i in page.Split(new[] {"<div class=\"col-xs-10\">"}, StringSplitOptions.None).Skip(1))
+            var list = new UserFiles(type);
+            foreach (var i in page.Split(new[] {"<div class=\"col-xs-2 text-center\">"}, StringSplitOptions.None).Skip(1))
             {
-                var endIndex = i.IndexOf("<script type=\"text/javascript\">");
+                var endIndex = i.IndexOf("class=\"btn btn-default pull-right\">Detail");
                 if (endIndex < 0) continue;
-                var userFile = new UserFile();
+                var userFile = new UserFile(type);
                 var dataString = i.Substring(0, endIndex);
                 {
-                    var name = Regex.Match(dataString, "<a href=\".+\">.+<\\/a>").Value;
+                    var name = Regex.Match(dataString, "<h2><a href=\".+\">.+<\\/a>").Value.Substring(13);
+                    userFile.Id = name.Substring(0, name.IndexOf("\"")).Replace("/en/files/", "").Replace("/", "");
                     var startIndex = name.IndexOf(">") + 1;
                     userFile.Name = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("</a>") - startIndex).Trim());
-                    startIndex = name.IndexOf("\"") + 1;
-                    userFile.Id = name.Substring(startIndex, name.IndexOf("\"", startIndex) - startIndex).Replace("/en/files/", "").Replace("/", "");
                 }
                 {
                     var name = Regex.Match(dataString, "Author - <a href=\".+\">.+<\\/a>").Value;
@@ -150,13 +164,23 @@ namespace DCSSkinManager
                     var startIndex = name.IndexOf("\"") + 1;
                     userFile.DownloadLink = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("\"", startIndex) - startIndex).Trim());
                 }
+                {
+                    var matches = Regex.Matches(dataString, "<a href=\"\\/upload\\/iblock.+?\"");
+                    userFile.Preview = new String[matches.Count];
+                    for (int j = 0; j < userFile.Preview.Length; j++)
+                    {
+                        userFile.Preview[j] = matches[j].Value.Substring(24, matches[j].Value.Length - 25); ///upload/iblock/
+                    }
+                }
                 list.Files.Add(userFile);
             }
+
+            return list;
         }
 
-        public static void DeleteSkin(UserFile file, String directory)
+        public void DeleteFile(UserFile file)
         {
-            foreach (var dir in Directory.GetDirectories(directory))
+            foreach (var dir in Directory.GetDirectories($@"{DcsInstallDirectory}\{file.UnitType.DirectoryName()}"))
             {
                 var index = dir.IndexOf(".");
                 if (index != -1 && dir.Substring(0, index).Equals(file.Id))
@@ -166,9 +190,8 @@ namespace DCSSkinManager
             }
         }
 
-        public static void InstallSkin(UserFile file, String directory)
+        public void InstallFile(UserFile file)
         {
-            SevenZipBase.SetLibraryPath($@"{AppDomain.CurrentDomain.BaseDirectory}\7z.dll");
             var url = $@"https://www.digitalcombatsimulator.com{file.DownloadLink}";
 
             HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
@@ -209,7 +232,7 @@ namespace DCSSkinManager
 
                     foreach (var skin in skinList)
                     {
-                        var directoryName = $@"{directory}\{skin.directoryName}";
+                        var directoryName = $@"{DcsInstallDirectory}\{file.UnitType.DirectoryName()}\{skin.directoryName}";
                         if (Directory.Exists(directoryName))
                             Directory.Delete(directoryName, true);
                         Directory.CreateDirectory(directoryName);
