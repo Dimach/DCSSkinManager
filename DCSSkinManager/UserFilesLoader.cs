@@ -83,7 +83,8 @@ namespace DCSSkinManager
             var dirs = Directory.GetDirectories($@"{dcsInstallFolder}\{list.Filter.GetDirectory()}").Select(dir =>
             {
                 dir = dir.Substring(dir.LastIndexOf('\\') + 1);
-                return dir.Substring(0, dir.IndexOf('.'));
+                var index = dir.IndexOf('.');
+                return index == -1 ? String.Empty : dir.Substring(0, index);
             }).ToArray();
             foreach (var file in list.Files)
             {
@@ -111,7 +112,7 @@ namespace DCSSkinManager
         {
             foreach (var i in page.Split(new[] {"<div class=\"col-xs-10\">"}, StringSplitOptions.None).Skip(1))
             {
-                var endIndex = i.IndexOf("<div class=\"row file-head file-type-skn\">");
+                var endIndex = i.IndexOf("<script type=\"text/javascript\">");
                 if (endIndex < 0) continue;
                 var userFile = new UserFile();
                 var dataString = i.Substring(0, endIndex);
@@ -153,7 +154,19 @@ namespace DCSSkinManager
             }
         }
 
-        public static void installSkin(UserFile file, String directory)
+        public static void DeleteSkin(UserFile file, String directory)
+        {
+            foreach (var dir in Directory.GetDirectories(directory))
+            {
+                var index = dir.IndexOf(".");
+                if (index != -1 && dir.Substring(0, index).Equals(file.Id))
+                {
+                    Directory.Delete(dir, true);
+                }
+            }
+        }
+
+        public static void InstallSkin(UserFile file, String directory)
         {
             SevenZipBase.SetLibraryPath($@"{AppDomain.CurrentDomain.BaseDirectory}\7z.dll");
             var url = $@"https://www.digitalcombatsimulator.com{file.DownloadLink}";
