@@ -7,6 +7,7 @@
                       xmlns:local="clr-namespace:DCSSkinManager"
                       xmlns:utils="clr-namespace:DCSSkinManager.Utils"
                       xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                       mc:Ignorable="d"
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       WindowStartupLocation="CenterScreen"
@@ -68,7 +69,20 @@
             </ItemsControl.ItemsPanel>
         </ItemsControl>
         <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55" IsIndeterminate="True" />
-        <DataGrid Name="UserFilesListView" ItemsSource="{Binding UserFiles, Mode=OneWay}" AutoGenerateColumns="True" MaxColumnWidth="120" />
+        <DataGrid Name="UserFilesListView" ItemsSource="{Binding UserFiles, Mode=OneWay}" AutoGenerateColumns="False"
+                  MaxColumnWidth="120" RowHeight="16" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Path=Name}" >
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Author" Binding="{Binding Path=Author}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Date" Binding="{Binding Path=Date}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Description" Binding="{Binding Path=Description}">
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Downloads" Binding="{Binding Path=Downloads}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Size" Binding="{Binding Path=Size}"></DataGridTextColumn>
+                <DataGridCheckBoxColumn Header="Installed" Binding="{Binding Path=Downloaded}" IsReadOnly="False"></DataGridCheckBoxColumn>
+            </DataGrid.Columns>
+        </DataGrid>
     </DockPanel>
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands ShowLastSeparator="False">
@@ -81,6 +95,9 @@
                           ItemContainerStyle="{StaticResource AccentColorMenuItemStyle}"
                           ItemsSource="{Binding AccentColors, Mode=OneWay}" />
             </Menu>
+            <Button>
+                <iconPacks:PackIconIonicons Kind="SettingsMD"/>
+            </Button>
         </Controls:WindowCommands>
     </Controls:MetroWindow.RightWindowCommands>
 </Controls:MetroWindow>
