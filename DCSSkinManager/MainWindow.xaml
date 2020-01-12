@@ -46,17 +46,17 @@
         </Style>
         <utils:EnumToIconsConverter x:Key="EnumToIconConverter" />
         <DataTemplate x:Key="ModuleButtonTemplate">
-            <Button Width="70"
+            <ToggleButton Width="90"
                     Height="30"
                     Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.ModuleClickCommand}"
                     CommandParameter="{Binding}"
                     Style="{DynamicResource ChromelessButtonStyle}"
                     d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}">
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Image Source="{Binding Path=., Converter={StaticResource EnumToIconConverter}}" Stretch="Fill" />
-                    <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
                 </StackPanel>
-            </Button>
+            </ToggleButton>
         </DataTemplate>
     </Window.Resources>
     <DockPanel LastChildFill="True">
@@ -70,17 +70,15 @@
         </ItemsControl>
         <ProgressBar DockPanel.Dock="Bottom" Height="10" Minimum="0" Maximum="100" Value="55" IsIndeterminate="True" />
         <DataGrid Name="UserFilesListView" ItemsSource="{Binding UserFiles, Mode=OneWay}" AutoGenerateColumns="False"
-                  MaxColumnWidth="120" RowHeight="16" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
+                  RowHeight="16" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True" GridLinesVisibility="All" >
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Path=Name}" >
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="Author" Binding="{Binding Path=Author}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Date" Binding="{Binding Path=Date}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Description" Binding="{Binding Path=Description}">
-                </DataGridTextColumn>
-                <DataGridTextColumn Header="Downloads" Binding="{Binding Path=Downloads}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Size" Binding="{Binding Path=Size}"></DataGridTextColumn>
-                <DataGridCheckBoxColumn Header="Installed" Binding="{Binding Path=Downloaded}" IsReadOnly="False"></DataGridCheckBoxColumn>
+                <DataGridTextColumn Header="Name" Binding="{Binding Path=Name}" Width="4*"></DataGridTextColumn>
+                <DataGridTextColumn Header="Description" Binding="{Binding Path=Description}" Width="9*"></DataGridTextColumn>
+                <DataGridTextColumn Header="Author" Binding="{Binding Path=Author}" Width="3*"></DataGridTextColumn>
+                <DataGridTextColumn Header="Date" Binding="{Binding Path=Date}" Width="2*"></DataGridTextColumn>
+                <DataGridTextColumn Header="Downloads" Binding="{Binding Path=Downloads}" Width="2*"></DataGridTextColumn>
+                <DataGridTextColumn Header="Size" Binding="{Binding Path=Size}" Width="2*"></DataGridTextColumn>
+                <DataGridCheckBoxColumn Header="Installed" Binding="{Binding Path=Downloaded}" IsReadOnly="False" Width="2*"></DataGridCheckBoxColumn>
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>
