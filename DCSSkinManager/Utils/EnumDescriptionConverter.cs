@@ -7,6 +7,15 @@ using System.Windows.Markup;
 
 namespace DCSSkinManager.Utils
 {
+    public static class Utils
+    {
+        public static String DirectoryName(this UnitType unitType)
+        {
+            var customAttributes = (DirectoryAttribute[]) typeof(UnitType).GetField(unitType.ToString()).GetCustomAttributes(typeof(DirectoryAttribute), false);
+            return customAttributes.Length > 0 ? customAttributes[0].Directory : String.Empty;
+        }
+    }
+    
     public class EnumDescriptionTypeConverter : EnumConverter
     {
         public EnumDescriptionTypeConverter(Type type) : base(type)
