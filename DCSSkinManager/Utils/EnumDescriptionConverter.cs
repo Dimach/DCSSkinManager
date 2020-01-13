@@ -11,7 +11,7 @@ namespace DCSSkinManager.Utils
     {
         public static String DirectoryName(this UnitType unitType)
         {
-            var customAttributes = (DirectoryAttribute[]) typeof(UnitType).GetField(unitType.ToString()).GetCustomAttributes(typeof(DirectoryAttribute), false);
+            var customAttributes = (DirectoryName[]) typeof(UnitType).GetField(unitType.ToString()).GetCustomAttributes(typeof(DirectoryName), false);
             return customAttributes.Length > 0 ? customAttributes[0].Directory : String.Empty;
         }
     }
