@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using DCSSkinManager.Utils;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using SevenZip;
@@ -89,19 +90,19 @@ namespace DCSSkinManager
 
         [Description("M-2000C"), DirectoryName("M-2000C")]
         M2000C = 313,
-        
+
         [Description("A-10A"), DirectoryName("a-10a")]
         A10A = 25,
-        
+
         [Description("A-10C"), DirectoryName("a-10c")]
         A10C = 60,
-        
+
         [Description("F-5E"), DirectoryName("f-5e-3")]
         F5E = 393,
 
         [Description("F-14B"), DirectoryName("f-14b")]
         F14B = 545,
-        
+
         [Description("F-15C"), DirectoryName("f-15c")]
         F15C = 22,
 
@@ -121,7 +122,7 @@ namespace DCSSkinManager
             DcsInstallDirectory = dcsInstallDirectory;
         }
 
-        private MemoryStream DownloadResource(String url)
+        private async Task<Stream> DownloadResource(String url, CancellationToken token)
         {
             HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
@@ -130,13 +131,13 @@ namespace DCSSkinManager
             using (var stream = response.GetResponseStream())
             {
                 var memory = new MemoryStream();
-                stream.CopyTo(memory);
+                await stream.CopyToAsync(memory, 81920, token);
                 memory.Position = 0;
                 return memory;
             }
         }
 
-        public void CheckDownloadedFiles(UserFiles list)
+        private void CheckDownloadedFiles(UserFiles list)
         {
             var dirs = Directory.GetDirectories($@"{DcsInstallDirectory}\{list.UnitType.DirectoryName()}").Select(dir =>
             {
@@ -150,17 +151,21 @@ namespace DCSSkinManager
             }
         }
 
-        public Task<Image> GetImage(String url)
+        public Task<Image> GetPreviewImage(String url, CancellationToken token)
         {
-            var promise = new TaskCompletionSource<Image>();
-            promise.SetResult(Image.FromStream(DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}")));
-            return promise.Task;
+            return Task.Run(async () => Image.FromStream(await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token)), token);
         }
 
-        public UserFiles LoadUserFiles(UnitType unit)
+        public Task<UserFiles> LoadUserFiles(UnitType unit, CancellationToken token)
         {
-            var url = $@"https://www.digitalcombatsimulator.com/en/files/?PER_PAGE=10000&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) unit}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
-            return ParsePage(unit, new StreamReader(DownloadResource(url)).ReadToEnd());
+            return Task.Run(async () =>
+            {
+                var url = $@"https://www.digitalcombatsimulator.com/en/files/?PER_PAGE=10000&set_filter=Y&arrFilter_pf%5Bfiletype%5D=6&arrFilter_pf%5Bgameversion%5D=&arrFilter_pf%5Bfilelang%5D=&arrFilter_pf%5Baircraft%5D={(int) unit}&arrFilter_DATE_CREATE_1_DAYS_TO_BACK=&CREATED_BY=&sort_by_order=TIMESTAMP_X_DESC&set_filter=Filter";
+                var resource = await DownloadResource(url, token);
+                var userFiles = ParsePage(unit, new StreamReader(resource).ReadToEnd());
+                CheckDownloadedFiles(userFiles);
+                return userFiles;
+            }, token);
         }
 
         private UserFiles ParsePage(UnitType type, String page)
@@ -219,58 +224,70 @@ namespace DCSSkinManager
             return list;
         }
 
-        public void DeleteFile(UserFile file)
+        public Task DeleteFile(UserFile file, CancellationToken token)
         {
-            foreach (var dir in Directory.GetDirectories($@"{DcsInstallDirectory}\{file.UnitType.DirectoryName()}"))
+            return Task.Run(() =>
             {
-                var index = dir.IndexOf(".");
-                if (index != -1 && dir.Substring(0, index).Equals(file.Id))
+                foreach (var dir in Directory.GetDirectories($@"{DcsInstallDirectory}\{file.UnitType.DirectoryName()}"))
                 {
-                    Directory.Delete(dir, true);
+                    var index = dir.IndexOf(".");
+                    if (index != -1 && dir.Substring(0, index).Equals(file.Id))
+                    {
+                        Directory.Delete(dir, true);
+                    }
                 }
-            }
+            });
         }
 
-        public void InstallFile(UserFile file)
+        public Task InstallFile(UserFile file, CancellationToken token)
         {
-            var url = $@"https://www.digitalcombatsimulator.com{file.DownloadLink}";
-
-            using (var extractor = new SevenZipExtractor(DownloadResource(url)))
+            return Task.Run(async () =>
             {
-                var skinList = new List<Skin>();
-                foreach (var archiveFile in extractor.ArchiveFileData)
-                {
-                    if (!archiveFile.IsDirectory && archiveFile.FileName.EndsWith("\\description.lua"))
-                    {
-                        var archivePath = archiveFile.FileName.Substring(0, archiveFile.FileName.Length - 16);
-                        skinList.Add(new Skin(archivePath + "\\", file.Id + "." + archivePath.Substring(archivePath.LastIndexOf("\\") + 1)));
-                    }
-                }
+                var url = $@"https://www.digitalcombatsimulator.com{file.DownloadLink}";
 
-                foreach (var archiveFile in extractor.ArchiveFileData)
+                var resource = await DownloadResource(url, token);
+                using (var extractor = new SevenZipExtractor(resource))
                 {
-                    if (!archiveFile.IsDirectory)
+                    var skinList = new List<Skin>();
+                    foreach (var archiveFile in extractor.ArchiveFileData)
                     {
-                        skinList.FirstOrDefault(skin => archiveFile.FileName.StartsWith(skin.archivePath))?.indexes?.Add(archiveFile.Index);
-                    }
-                }
-
-                foreach (var skin in skinList)
-                {
-                    var directoryName = $@"{DcsInstallDirectory}\{file.UnitType.DirectoryName()}\{skin.directoryName}";
-                    if (Directory.Exists(directoryName))
-                        Directory.Delete(directoryName, true);
-                    Directory.CreateDirectory(directoryName);
-                    foreach (var i in skin.indexes)
-                    {
-                        var archiveFileName = extractor.ArchiveFileNames[i];
-                        using (var fileStream = new FileStream($@"{directoryName}\{archiveFileName.Substring(archiveFileName.LastIndexOf("\\") + 1)}", FileMode.Create))
+                        if (!archiveFile.IsDirectory && archiveFile.FileName.EndsWith("\\description.lua"))
                         {
-                            extractor.ExtractFile(i, fileStream);
+                            var archivePath = archiveFile.FileName.Substring(0, archiveFile.FileName.Length - 16);
+                            skinList.Add(new Skin(archivePath + "\\", file.Id + "." + archivePath.Substring(archivePath.LastIndexOf("\\") + 1)));
+                        }
+                    }
+
+                    foreach (var archiveFile in extractor.ArchiveFileData)
+                    {
+                        if (!archiveFile.IsDirectory)
+                        {
+                            skinList.FirstOrDefault(skin => archiveFile.FileName.StartsWith(skin.archivePath))?.indexes?.Add(archiveFile.Index);
+                        }
+                    }
+
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    foreach (var skin in skinList)
+                    {
+                        var directoryName = $@"{DcsInstallDirectory}\{file.UnitType.DirectoryName()}\{skin.directoryName}";
+                        if (Directory.Exists(directoryName))
+                            Directory.Delete(directoryName, true);
+                        Directory.CreateDirectory(directoryName);
+                        foreach (var i in skin.indexes)
+                        {
+                            var archiveFileName = extractor.ArchiveFileNames[i];
+                            using (var fileStream = new FileStream($@"{directoryName}\{archiveFileName.Substring(archiveFileName.LastIndexOf("\\") + 1)}", FileMode.Create))
+                            {
+                                extractor.ExtractFile(i, fileStream);
+                            }
                         }
                     }
                 }
-            }
+            }, token);
         }
 
         private class Skin
