@@ -139,7 +139,10 @@ namespace DCSSkinManager
 
         private void CheckDownloadedFiles(UserFiles list)
         {
-            var dirs = Directory.GetDirectories($@"{DcsInstallDirectory}\{list.UnitType.DirectoryName()}").Select(dir =>
+            var moduleDir = $@"{DcsInstallDirectory}\{list.UnitType.DirectoryName()}";
+            if (!Directory.Exists(moduleDir))
+                return;
+            var dirs = Directory.GetDirectories(moduleDir).Select(dir =>
             {
                 dir = dir.Substring(dir.LastIndexOf('\\') + 1);
                 var index = dir.IndexOf('.');
@@ -153,7 +156,20 @@ namespace DCSSkinManager
 
         public Task<Image> GetPreviewImage(String url, CancellationToken token)
         {
-            return Task.Run(async () => Image.FromStream(await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token)), token);
+            return Task.Run(async () =>
+            {
+                var cacheFileName = $@"DcsInstallDirectory\.DCSSkinManager\{url.Replace("/", "$")}";
+                if (File.Exists(cacheFileName))
+                    return Image.FromFile(cacheFileName);
+                var resource = await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token);
+                using (var fileStream = new FileStream(cacheFileName, FileMode.Open))
+                {
+                    resource.CopyTo(fileStream);
+                }
+
+                resource.Position = 0;
+                return Image.FromStream(resource);
+            }, token);
         }
 
         public Task<UserFiles> LoadUserFiles(UnitType unit, CancellationToken token)
