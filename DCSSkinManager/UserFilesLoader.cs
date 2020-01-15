@@ -81,21 +81,51 @@ namespace DCSSkinManager
 
         [Description("Su-25T"), DirectoryName("su-25t")]
         SU25T = 29,
+        
+        [Description("Mig-15bis"), DirectoryName("MiG-15bis")]
+        MIG15BIS = 153,
+        
+        [Description("Mig-19P"), DirectoryName("MiG-19P")]
+        MIG19P = 543,
+        
+        [Description("Mig-21"), DirectoryName("MiG-21Bis")]
+        MIG21 = 154,
 
         [Description("Mig-29A"), DirectoryName("mig-29a")]
         MIG29A = 21,
 
         [Description("Mig-29S"), DirectoryName("mig-29s")]
         MIG29S = 26,
+        
+        [Description("L-39"), DirectoryName("L-39C")]
+        L39 = 247,
+        
+        [Description("J-11A"), DirectoryName("J-11A")]
+        J11A = 538,
+        
+        [Description("JF-17"), DirectoryName("JF-17")]
+        JF17 = 562,
+        
+        [Description("SA342"), DirectoryName("SA342M")]
+        SA342 = 376,
 
         [Description("M-2000C"), DirectoryName("M-2000C")]
         M2000C = 313,
+        
+        [Description("AJS-37"), DirectoryName("AJS37")]
+        AJS37 = 431,
+
+        [Description("UH-1H"), DirectoryName("uh-1h")]
+        UH1H = 90,
 
         [Description("A-10A"), DirectoryName("a-10a")]
         A10A = 25,
 
         [Description("A-10C"), DirectoryName("a-10c")]
         A10C = 60,
+        
+        [Description("AV-8B"), DirectoryName("AV8BNA")]
+        AV8B = 501,
 
         [Description("F-5E"), DirectoryName("f-5e-3")]
         F5E = 393,
@@ -111,6 +141,36 @@ namespace DCSSkinManager
 
         [Description("F/A-18C"), DirectoryName("FA-18C_hornet")]
         FA18C = 535,
+        
+        [Description("F-86F"), DirectoryName("f-86f sabre")]
+        F86F = 150,
+
+        [Description("Fw 190 D-9"), DirectoryName("FW-190D9")]
+        FW190D9 = 148,
+        
+        [Description("Bf 109 K-4"), DirectoryName("Bf-109K-4")]
+        BF109K4 = 149,
+        
+        [Description("Yak-52"), DirectoryName("Yak-52")]
+        YAK52 = 537,
+        
+        [Description("P-51D"), DirectoryName("P-51D")]
+        P51D = 85,
+        
+        [Description("Spitfire LF Mk.IX"), DirectoryName("SpitfireLFMkIX")]
+        SPITFIREMK9 = 430,
+        
+        [Description("I-16"), DirectoryName("I-16")]
+        I16 = 560,
+        
+        [Description("C-101"), DirectoryName("C-101CC")]
+        C101 = 151,
+        
+        [Description("Christen Eagle II"), DirectoryName("Christen Eagle II")]
+        CE2 = 544,
+        
+        [Description("Hawk T.1A"), DirectoryName("Hawk")]
+        HAWK = 152,
     }
 
     public class DataLoader
@@ -158,7 +218,10 @@ namespace DCSSkinManager
         {
             return Task.Run(async () =>
             {
-                var cacheFileName = $@"DcsInstallDirectory\.DCSSkinManager\{url.Replace("/", "$")}";
+                var cacheFileName = $@"{DcsInstallDirectory}\.DCSSkinManager\PreviewCache";
+                if (!Directory.Exists(cacheFileName))
+                    Directory.CreateDirectory(cacheFileName);
+                cacheFileName = $@"{cacheFileName}\{url.Replace("/", "$")}";
                 if (File.Exists(cacheFileName))
                     return Image.FromFile(cacheFileName);
                 var resource = await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token);
