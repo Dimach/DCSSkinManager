@@ -88,8 +88,8 @@ namespace DCSSkinManager
         [Description("Mig-19P"), DirectoryName("MiG-19P")]
         MIG19P = 543,
         
-        [Description("Mig-21"), DirectoryName("MiG-21Bis")]
-        MIG21 = 154,
+        [Description("Mig-21bis"), DirectoryName("MiG-21Bis")]
+        MIG21BIS = 154,
 
         [Description("Mig-29A"), DirectoryName("mig-29a")]
         MIG29A = 21,

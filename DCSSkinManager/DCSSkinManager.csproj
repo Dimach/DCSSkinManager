@@ -190,6 +190,31 @@
     <Content Include="7z.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Icons\MIG29S.png" />
+    <Resource Include="Icons\SU25T.png" />
+    <Resource Include="Icons\A10A.png" />
+    <Resource Include="Icons\AJS37.png" />
+    <Resource Include="Icons\AV8B.png" />
+    <Resource Include="Icons\BF109K4.png" />
+    <Resource Include="Icons\C101.png" />
+    <Resource Include="Icons\CE2.png" />
+    <Resource Include="Icons\F15C.png" />
+    <Resource Include="Icons\F5E.png" />
+    <Resource Include="Icons\F86F.png" />
+    <Resource Include="Icons\FW190A8.png" />
+    <Resource Include="Icons\FW190D9.png" />
+    <Resource Include="Icons\I16.png" />
+    <Resource Include="Icons\JF17.png" />
+    <Resource Include="Icons\L39.png" />
+    <Resource Include="Icons\MIG15BIS.png" />
+    <Resource Include="Icons\MIG19P.png" />
+    <Resource Include="Icons\MIG21BIS.png" />
+    <Resource Include="Icons\MIG29A.png" />
+    <Resource Include="Icons\P51D.png" />
+    <Resource Include="Icons\SA342.png" />
+    <Resource Include="Icons\SPITFIREMK9.png" />
+    <Resource Include="Icons\UH1H.png" />
+    <Resource Include="Icons\YAK52.png" />
     <Resource Include="Samples\Main.jpg" />
     <Resource Include="Samples\Sample1.jpg" />
     <Resource Include="Samples\Sample2.jpg" />
