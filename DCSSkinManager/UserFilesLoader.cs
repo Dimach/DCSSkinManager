@@ -81,13 +81,13 @@ namespace DCSSkinManager
 
         [Description("Su-25T"), DirectoryName("su-25t")]
         SU25T = 29,
-        
+
         [Description("Mig-15bis"), DirectoryName("MiG-15bis")]
         MIG15BIS = 153,
-        
+
         [Description("Mig-19P"), DirectoryName("MiG-19P")]
         MIG19P = 543,
-        
+
         [Description("Mig-21bis"), DirectoryName("MiG-21Bis")]
         MIG21BIS = 154,
 
@@ -96,22 +96,22 @@ namespace DCSSkinManager
 
         [Description("Mig-29S"), DirectoryName("mig-29s")]
         MIG29S = 26,
-        
+
         [Description("L-39"), DirectoryName("L-39C")]
         L39 = 247,
-        
+
         [Description("J-11A"), DirectoryName("J-11A")]
         J11A = 538,
-        
+
         [Description("JF-17"), DirectoryName("JF-17")]
         JF17 = 562,
-        
+
         [Description("SA342"), DirectoryName("SA342M")]
         SA342 = 376,
 
         [Description("M-2000C"), DirectoryName("M-2000C")]
         M2000C = 313,
-        
+
         [Description("AJS-37"), DirectoryName("AJS37")]
         AJS37 = 431,
 
@@ -123,7 +123,7 @@ namespace DCSSkinManager
 
         [Description("A-10C"), DirectoryName("a-10c")]
         A10C = 60,
-        
+
         [Description("AV-8B"), DirectoryName("AV8BNA")]
         AV8B = 501,
 
@@ -141,34 +141,34 @@ namespace DCSSkinManager
 
         [Description("F/A-18C"), DirectoryName("FA-18C_hornet")]
         FA18C = 535,
-        
+
         [Description("F-86F"), DirectoryName("f-86f sabre")]
         F86F = 150,
 
         [Description("Fw 190 D-9"), DirectoryName("FW-190D9")]
         FW190D9 = 148,
-        
+
         [Description("Bf 109 K-4"), DirectoryName("Bf-109K-4")]
         BF109K4 = 149,
-        
+
         [Description("Yak-52"), DirectoryName("Yak-52")]
         YAK52 = 537,
-        
+
         [Description("P-51D"), DirectoryName("P-51D")]
         P51D = 85,
-        
+
         [Description("Spitfire LF Mk.IX"), DirectoryName("SpitfireLFMkIX")]
         SPITFIREMK9 = 430,
-        
+
         [Description("I-16"), DirectoryName("I-16")]
         I16 = 560,
-        
+
         [Description("C-101"), DirectoryName("C-101CC")]
         C101 = 151,
-        
+
         [Description("Christen Eagle II"), DirectoryName("Christen Eagle II")]
         CE2 = 544,
-        
+
         [Description("Hawk T.1A"), DirectoryName("Hawk")]
         HAWK = 152,
     }
@@ -199,12 +199,12 @@ namespace DCSSkinManager
 
         private void CheckDownloadedFiles(UserFiles list)
         {
-            var moduleDir = $@"{DcsInstallDirectory}\{list.UnitType.DirectoryName()}";
+            var moduleDir = Path.Combine(DcsInstallDirectory, "Liveries", list.UnitType.DirectoryName());
             if (!Directory.Exists(moduleDir))
                 return;
             var dirs = Directory.GetDirectories(moduleDir).Select(dir =>
             {
-                dir = dir.Substring(dir.LastIndexOf('\\') + 1);
+                dir = Path.GetFileName(dir);
                 var index = dir.IndexOf('.');
                 return index == -1 ? String.Empty : dir.Substring(0, index);
             }).ToArray();
@@ -218,10 +218,10 @@ namespace DCSSkinManager
         {
             return Task.Run(async () =>
             {
-                var cacheFileName = $@"{DcsInstallDirectory}\.DCSSkinManager\PreviewCache";
+                var cacheFileName = Path.Combine(DcsInstallDirectory, @".DCSSkinManager\PreviewCache");
                 if (!Directory.Exists(cacheFileName))
                     Directory.CreateDirectory(cacheFileName);
-                cacheFileName = $@"{cacheFileName}\{url.Replace("/", "$")}";
+                cacheFileName = Path.Combine(cacheFileName, url.Replace("/", "$"));
                 if (File.Exists(cacheFileName))
                     return new BitmapImage(new Uri(cacheFileName));
                 var resource = await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token);
@@ -311,7 +311,7 @@ namespace DCSSkinManager
         {
             return Task.Run(() =>
             {
-                foreach (var dir in Directory.GetDirectories($@"{DcsInstallDirectory}\{file.UnitType.DirectoryName()}"))
+                foreach (var dir in Directory.GetDirectories(Path.Combine(DcsInstallDirectory, "Liveries", file.UnitType.DirectoryName())))
                 {
                     var index = dir.IndexOf(".");
                     if (index != -1 && dir.Substring(0, index).Equals(file.Id))
@@ -337,7 +337,7 @@ namespace DCSSkinManager
                         if (!archiveFile.IsDirectory && archiveFile.FileName.EndsWith("\\description.lua"))
                         {
                             var archivePath = archiveFile.FileName.Substring(0, archiveFile.FileName.Length - 16);
-                            skinList.Add(new Skin(archivePath + "\\", file.Id + "." + archivePath.Substring(archivePath.LastIndexOf("\\") + 1)));
+                            skinList.Add(new Skin(archivePath + "\\", file.Id + "." + Path.GetFileName(archivePath)));
                         }
                     }
 
@@ -345,7 +345,7 @@ namespace DCSSkinManager
                     {
                         if (!archiveFile.IsDirectory)
                         {
-                            skinList.FirstOrDefault(skin => archiveFile.FileName.StartsWith(skin.archivePath))?.indexes?.Add(archiveFile.Index);
+                            skinList.FirstOrDefault(skin => archiveFile.FileName.StartsWith(skin.ArchivePath))?.Indexes?.Add(archiveFile.Index);
                         }
                     }
 
@@ -356,14 +356,13 @@ namespace DCSSkinManager
 
                     foreach (var skin in skinList)
                     {
-                        var directoryName = $@"{DcsInstallDirectory}\{file.UnitType.DirectoryName()}\{skin.directoryName}";
+                        var directoryName = Path.Combine(DcsInstallDirectory, "Liveries", file.UnitType.DirectoryName(), skin.DirectoryName);
                         if (Directory.Exists(directoryName))
                             Directory.Delete(directoryName, true);
                         Directory.CreateDirectory(directoryName);
-                        foreach (var i in skin.indexes)
+                        foreach (var i in skin.Indexes)
                         {
-                            var archiveFileName = extractor.ArchiveFileNames[i];
-                            using (var fileStream = new FileStream($@"{directoryName}\{archiveFileName.Substring(archiveFileName.LastIndexOf("\\") + 1)}", FileMode.Create))
+                            using (var fileStream = new FileStream(Path.Combine(directoryName, Path.GetFileName(extractor.ArchiveFileNames[i])), FileMode.Create))
                             {
                                 extractor.ExtractFile(i, fileStream);
                             }
@@ -375,14 +374,14 @@ namespace DCSSkinManager
 
         private class Skin
         {
-            public String archivePath;
-            public String directoryName;
-            public List<int> indexes = new List<int>();
+            public String ArchivePath;
+            public String DirectoryName;
+            public List<int> Indexes = new List<int>();
 
             public Skin(String archivePath, String directoryName)
             {
-                this.archivePath = archivePath;
-                this.directoryName = directoryName;
+                ArchivePath = archivePath;
+                DirectoryName = directoryName;
             }
         }
     }
