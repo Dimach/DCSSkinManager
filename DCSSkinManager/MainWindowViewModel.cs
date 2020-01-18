@@ -15,6 +15,7 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Media.Imaging;
 using DCSSkinManager.Annotations;
 
 namespace DCSSkinManager
@@ -82,6 +83,8 @@ namespace DCSSkinManager
     public class MainWindowViewModel
     {
         private ICommand _moduleClickCommand;
+        private ICommand _checkedCommand;
+        private ICommand _uncheckedCommand;
         public ObservableCollection<HamburgerMenuGlyphItem> TestCollection { get; } = new ObservableCollection<HamburgerMenuGlyphItem>()
         {
             new HamburgerMenuGlyphItem()
@@ -90,30 +93,23 @@ namespace DCSSkinManager
                 Label = "TEST S33"
             }
         };
-        public ObservableCollection<UserFile> UserFiles { get; } = new ObservableCollection<UserFile>()
+        public ObservableCollection<UserFileData> UserFiles { get; } = new ObservableCollection<UserFileData>() { };
+        public ICommand UncheckedCommand => _uncheckedCommand ?? (_uncheckedCommand = new SimpleCommand()
         {
-            new UserFile(UnitType.KA50)
+            CanExecuteDelegate = o => true,
+            ExecuteDelegate = o =>
             {
-                Name = "FUCKINGLONGNAMEWHATNEVERENDBLYAT", Description = "TEST", Author = "THNDF", DownloadLink = "www.www.www",
-                Date = "21.22.123", Downloads = "0", Size = "5"
-            },
-            new UserFile(UnitType.F14B)
-            {
-                Name = "TEST2", Description = "TEST2", Author = "AAA", DownloadLink = "www.www.www",
-                Date = "21.22.321", Downloads = "0", Size = "5"
-            },
-            new UserFile(UnitType.MI8MTV2)
-            {
-                Name = "TEST3", Description = "TEST3", Author = "CSDFSDF", DownloadLink = "www.www.www",
-                Date = "21.22.5342", Downloads = "0", Size = "5"
-            },
-            new UserFile(UnitType.F16C)
-            {
-                Name = "TEST4", Description = "TEST4", Author = "BBCC", DownloadLink = "www.www.www",
-                Date = "21.22.5435", Downloads = "0", Size = "5"
-            },
-        };
 
+            }
+        });
+        public ICommand CheckedCommand => _checkedCommand ?? (_checkedCommand = new SimpleCommand()
+        {
+            CanExecuteDelegate = o => true,
+            ExecuteDelegate = o =>
+            {
+
+            }
+        });
         public ICommand ModuleClickCommand => _moduleClickCommand ?? (_moduleClickCommand = new SimpleCommand()
         {
             CanExecuteDelegate = o => true,
@@ -141,18 +137,53 @@ namespace DCSSkinManager
                 })
                 .ToList();
         }
-
-        private void OnModuleButtonClick(object sender)
+        private async void OnModuleButtonClick(object sender)
         {
             if (sender is UnitType craft)
             {
-                Load(this.dataLoader.LoadUserFiles(craft));
+                Load(await this.dataLoader.LoadUserFiles(craft, CancellationToken.None));
             }
         }
         public void Load(UserFiles files)
         {
             UserFiles.Clear();
-            files.Files.ForEach(UserFiles.Add);
+            files.Files.ForEach(x=>UserFiles.Add(new UserFileData(x, dataLoader)));
+        }
+    }
+
+    public class UserFileData
+    {
+        private readonly DataLoader _dataLoader;
+        private readonly string[] imageLinks;
+        public UserFileData(UserFile file, DataLoader dataLoader)
+        {
+            _dataLoader = dataLoader;
+            Name = file.Name;
+            Description = file.Description;
+            Author = file.Author;
+            Date = file.Date;
+            Size = file.Size;
+            Downloads = file.Downloads;
+            IsDownloaded = file.Preview.Length % 2 == 0;//file.Downloaded;
+            imageLinks = file.Preview;
+
+            DownloadImages();
+        }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Author { get; set; }
+        public string Date { get; set; }
+        public string Size { get; set; }
+        public string Downloads { get; set; }
+        public bool IsDownloaded { get; set; }
+
+        public BitmapImage MainImage => _dataLoader.GetPreviewImage(imageLinks[0], CancellationToken.None).Result;
+        public ObservableCollection<BitmapImage> AllImages => new ObservableCollection<BitmapImage>(imageLinks.Select(x=>_dataLoader.GetPreviewImage(x, CancellationToken.None).Result).ToList());
+        public async void DownloadImages()
+        {
+            if(imageLinks.Length == 0)
+                return;
+            // Task.WhenAll(imageLinks.Select(x => _dataLoader.GetPreviewImage(x, CancellationToken.None)).ToArray());
         }
     }
 }

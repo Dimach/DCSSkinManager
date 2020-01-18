@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
-using System.Windows;
 using System.Windows.Data;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace DCSSkinManager.Utils
@@ -14,7 +11,9 @@ namespace DCSSkinManager.Utils
         {
             if (value is UnitType unitType)
             {
-                var image = new BitmapImage(new Uri($"Icons/{unitType:G}.png", UriKind.Relative));
+                var path = $"Icons/{unitType:G}.png";
+                var uri = new Uri(path, UriKind.Relative);
+                var image = new BitmapImage(uri);
                 return image;
             }
 

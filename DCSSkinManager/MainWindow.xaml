@@ -61,8 +61,15 @@
                     <Image Margin="12"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
-                           Source="{Binding Path=., Converter={StaticResource EnumToIconConverter}}"
-                           Stretch="UniformToFill" />
+                           Stretch="UniformToFill">
+                        <Image.Source>
+                            <Binding Path="." Converter="{StaticResource EnumToIconConverter}">
+                                <Binding.TargetNullValue>
+                                    <iconPacks:PackIconMaterial Kind="ImageOff" />
+                                </Binding.TargetNullValue>
+                            </Binding>
+                        </Image.Source>
+                    </Image>
                 </Grid>
                 <TextBlock x:Name="TextPart"
                            VerticalAlignment="Center"
@@ -72,19 +79,29 @@
         </DataTemplate>
 
         <DataTemplate x:Key="UserFileMenuItem" DataType="{x:Type Controls:HamburgerMenuGlyphItem}">
-            <DockPanel Height="48" LastChildFill="True">
-                    <Image Margin="12"
-                           MaxWidth="30"
-                           DockPanel.Dock="Left"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Source="{DynamicResource mainSample}"
-                           Stretch="UniformToFill" />
+            <DockPanel Height="48" LastChildFill="True" Margin="10">
+                <ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" Margin="5 0 5 0"></ProgressBar>
+                <Image Margin="5"
+                       DockPanel.Dock="Left"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Source="{DynamicResource mainSample}"
+                       Stretch="Uniform" />
+                <Controls:ToggleSwitch DockPanel.Dock="Right"
+                                       VerticalAlignment="Center"
+                                       Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}"
+                                       OnLabel=""
+                                       OffLabel=""
+                                       CheckChangedCommand="{Binding RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay, Path=DataContext.DownloadCommandSwitch}"
+                                       CheckedCommand="{Binding RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay, Path=DataContext.CheckedCommand}"
+                                       UnCheckedCommand="{Binding RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay, Path=DataContext.UncheckedCommand}"
+                                       IsChecked="{Binding IsDownloaded}" />
+                <Viewbox VerticalAlignment="Center" MinHeight="10" Margin="4">
                     <TextBlock x:Name="TextPart"
-                               VerticalAlignment="Center"
-                               FontSize="16"
+                               TextWrapping="Wrap"
                                Text="{Binding Name}" />
-                </DockPanel>
+                </Viewbox>
+            </DockPanel>
         </DataTemplate>
 
         <Style x:Key="HamburgerMenuCreatorsItemStyle"
@@ -116,10 +133,10 @@
             <DockPanel LastChildFill="False">
                 <Border DockPanel.Dock="Top">
                     <TextBlock x:Name="Header"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               FontSize="24"
-                                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Name}" />
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="24"
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Name}" />
                 </Border>
                 <Controls:FlipView DockPanel.Dock="Bottom" MouseHoverBorderEnabled="False" IsBannerEnabled="False">
                     <Controls:FlipView.Items>
@@ -130,35 +147,40 @@
                         <Image Source="{StaticResource sample4}" />
                     </Controls:FlipView.Items>
                 </Controls:FlipView>
-                <TextBlock DockPanel.Dock="Left" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Description}" MaxWidth="600" TextWrapping="Wrap"/>
+                <TextBlock DockPanel.Dock="Left"
+                           Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Description}"
+                           MaxWidth="600" TextWrapping="Wrap" />
                 <Grid DockPanel.Dock="Right" Width="200" Height="100" VerticalAlignment="Top" Margin="10">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Column="0" Grid.Row="0" Text="Author"/>
-                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Author}"/>
-                    <TextBlock Grid.Column="0" Grid.Row="1" Text="Downloads"/>
-                    <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Downloads}"/>
-                    <TextBlock Grid.Column="0" Grid.Row="2" Text="Author"/>
-                    <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Author}"/>
-                    <TextBlock Grid.Column="0" Grid.Row="3" Text="Size"/>
-                    <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Size}"/>
-                    <TextBlock Grid.Column="0" Grid.Row="4" Text="Date"/>
-                    <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Date}"/>
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="Author" />
+                    <TextBlock Grid.Column="1" Grid.Row="0"
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Author}" />
+                    <TextBlock Grid.Column="0" Grid.Row="1" Text="Downloads" />
+                    <TextBlock Grid.Column="1" Grid.Row="1"
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Downloads}" />
+                    <TextBlock Grid.Column="0" Grid.Row="3" Text="Size" />
+                    <TextBlock Grid.Column="1" Grid.Row="3"
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Size}" />
+                    <TextBlock Grid.Column="0" Grid.Row="4" Text="Date" />
+                    <TextBlock Grid.Column="1" Grid.Row="4"
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Date}" />
                 </Grid>
             </DockPanel>
         </DataTemplate>
     </Window.Resources>
     <Controls:HamburgerMenu
         x:Name="AircraftMenuControl"
+        ItemClick="UserFileMenuControl_OnItemClick"
         ItemCommand="{Binding ModuleClickCommand}"
         ItemCommandParameter="{Binding ElementName=AircraftMenuControl, Path=SelectedItem}"
         ItemsSource="{Binding Source={StaticResource enmPositions}}"
@@ -180,14 +202,13 @@
                 <Controls:HamburgerMenu HamburgerVisibility="Collapsed"
                                         x:Name="UserFileMenuControl"
                                         HamburgerWidth="48"
-                                        OpenPaneLength="300"
+                                        OpenPaneLength="400"
                                         IsPaneOpen="True"
                                         ItemTemplate="{StaticResource UserFileMenuItem}"
                                         SelectedIndex="0"
                                         Style="{StaticResource HamburgerMenuCreatorsStyle}"
                                         ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay, Path=DataContext.UserFiles}"
-                                        ContentTemplate="{StaticResource UserFileContent}">
-                </Controls:HamburgerMenu>
+                                        ContentTemplate="{StaticResource UserFileContent}" />
             </DataTemplate>
         </Controls:HamburgerMenu.ContentTemplate>
     </Controls:HamburgerMenu>

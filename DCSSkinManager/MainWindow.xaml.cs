@@ -23,5 +23,13 @@ namespace DCSSkinManager
                                                    SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
             SevenZipBase.SetLibraryPath($@"{AppDomain.CurrentDomain.BaseDirectory}\7z.dll");
         }
+
+        private void UserFileMenuControl_OnItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (sender is HamburgerMenu menu)
+            {
+                menu.IsPaneOpen = false;
+            }
+        }
     }
 }

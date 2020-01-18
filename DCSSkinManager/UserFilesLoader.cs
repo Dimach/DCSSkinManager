@@ -214,7 +214,7 @@ namespace DCSSkinManager
             }
         }
 
-        public Task<Image> GetPreviewImage(String url, CancellationToken token)
+        public Task<BitmapImage> GetPreviewImage(String url, CancellationToken token)
         {
             return Task.Run(async () =>
             {
@@ -223,7 +223,7 @@ namespace DCSSkinManager
                     Directory.CreateDirectory(cacheFileName);
                 cacheFileName = $@"{cacheFileName}\{url.Replace("/", "$")}";
                 if (File.Exists(cacheFileName))
-                    return Image.FromFile(cacheFileName);
+                    return new BitmapImage(new Uri(cacheFileName));
                 var resource = await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token);
                 using (var fileStream = new FileStream(cacheFileName, FileMode.Open))
                 {
@@ -231,7 +231,11 @@ namespace DCSSkinManager
                 }
 
                 resource.Position = 0;
-                return Image.FromStream(resource);
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.StreamSource = resource;
+                image.EndInit();
+                return image;
             }, token);
         }
 
