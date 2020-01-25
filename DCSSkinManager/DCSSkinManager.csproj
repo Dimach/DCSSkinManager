@@ -190,6 +190,7 @@
     <Content Include="7z.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Samples\not_loaded_sample.gif" />
     <Resource Include="Icons\MIG29S.png" />
     <Resource Include="Icons\SU25T.png" />
     <Resource Include="Icons\A10A.png" />

@@ -16,6 +16,7 @@ using MahApps.Metro.Controls.Dialogs;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using DCSSkinManager.Annotations;
 
 namespace DCSSkinManager
@@ -85,31 +86,37 @@ namespace DCSSkinManager
         private ICommand _moduleClickCommand;
         private ICommand _checkedCommand;
         private ICommand _uncheckedCommand;
-        public ObservableCollection<HamburgerMenuGlyphItem> TestCollection { get; } = new ObservableCollection<HamburgerMenuGlyphItem>()
-        {
-            new HamburgerMenuGlyphItem()
+
+        public ObservableCollection<HamburgerMenuGlyphItem> TestCollection { get; } =
+            new ObservableCollection<HamburgerMenuGlyphItem>()
             {
-                Glyph = "Icons/SU33.png",
-                Label = "TEST S33"
-            }
-        };
+                new HamburgerMenuGlyphItem()
+                {
+                    Glyph = "Icons/SU33.png",
+                    Label = "TEST S33"
+                }
+            };
+
         public ObservableCollection<UserFileData> UserFiles { get; } = new ObservableCollection<UserFileData>() { };
+
         public ICommand UncheckedCommand => _uncheckedCommand ?? (_uncheckedCommand = new SimpleCommand()
         {
             CanExecuteDelegate = o => true,
             ExecuteDelegate = o =>
             {
-
+                _dataLoader.DeleteFile((o as UserFileData)?.UserFile, CancellationToken.None);
             }
         });
+
         public ICommand CheckedCommand => _checkedCommand ?? (_checkedCommand = new SimpleCommand()
         {
             CanExecuteDelegate = o => true,
             ExecuteDelegate = o =>
             {
-
+                _dataLoader.InstallFile((o as UserFileData)?.UserFile, CancellationToken.None);
             }
         });
+
         public ICommand ModuleClickCommand => _moduleClickCommand ?? (_moduleClickCommand = new SimpleCommand()
         {
             CanExecuteDelegate = o => true,
@@ -118,10 +125,11 @@ namespace DCSSkinManager
 
         public List<AccentColorMenuData> AccentColors { get; set; }
         public List<AppThemeMenuData> AppThemes { get; set; }
-        private DataLoader dataLoader { get; }
+        private DataLoader _dataLoader { get; }
+
         public MainWindowViewModel(IDialogCoordinator dialogCoordinator)
         {
-            this.dataLoader = new DataLoader($"test");
+            this._dataLoader = new DataLoader(@"C:\Users\Professional\Saved Games\DCS.openbeta");
             // create accent color menu items for the demo
             this.AccentColors = ThemeManager.Accents
                 .Select(a => new AccentColorMenuData()
@@ -137,53 +145,106 @@ namespace DCSSkinManager
                 })
                 .ToList();
         }
+
         private async void OnModuleButtonClick(object sender)
         {
             if (sender is UnitType craft)
             {
-                Load(await this.dataLoader.LoadUserFiles(craft, CancellationToken.None));
+                Load(await this._dataLoader.LoadUserFiles(craft, CancellationToken.None));
             }
         }
+
         public void Load(UserFiles files)
         {
             UserFiles.Clear();
-            files.Files.ForEach(x=>UserFiles.Add(new UserFileData(x, dataLoader)));
+            //UserFiles.Add(new UserFileData(files.Files[0], dataLoader));
+            files.Files
+                .Take(20).ToList()
+                .ForEach(x=>UserFiles.Add(new UserFileData(x, _dataLoader)));
         }
     }
 
-    public class UserFileData
+    public class UserFileData : INotifyPropertyChanged
     {
         private readonly DataLoader _dataLoader;
-        private readonly string[] imageLinks;
+        private BitmapImage _mainImage;
+
         public UserFileData(UserFile file, DataLoader dataLoader)
         {
             _dataLoader = dataLoader;
-            Name = file.Name;
-            Description = file.Description;
-            Author = file.Author;
-            Date = file.Date;
-            Size = file.Size;
-            Downloads = file.Downloads;
-            IsDownloaded = file.Preview.Length % 2 == 0;//file.Downloaded;
-            imageLinks = file.Preview;
+            UserFile = file;
+
+            var path = $"Samples/not_loaded_sample.gif";
+            var uri = new Uri(path, UriKind.Relative);
+            var image = new BitmapImage(uri);
+            MainImage = image;
+            AllImages = new ObservableCollection<Image>();
+            for (int i = 0; i < UserFile.Preview.Length; i++)
+            {
+                AllImages.Add(new Image() { Source = image });
+            }
 
             DownloadImages();
         }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Author { get; set; }
-        public string Date { get; set; }
-        public string Size { get; set; }
-        public string Downloads { get; set; }
-        public bool IsDownloaded { get; set; }
+        public UserFile UserFile { get; }
+        public string Name => UserFile.Name;
+        public string Description => UserFile.Description;
+        public string Author => UserFile.Author;
+        public string Date => UserFile.Date;
+        public string Size => UserFile.Size;
+        public string Downloads => UserFile.Downloads;
+        public bool IsDownloaded => UserFile.Downloaded;
 
-        public BitmapImage MainImage => _dataLoader.GetPreviewImage(imageLinks[0], CancellationToken.None).Result;
-        public ObservableCollection<BitmapImage> AllImages => new ObservableCollection<BitmapImage>(imageLinks.Select(x=>_dataLoader.GetPreviewImage(x, CancellationToken.None).Result).ToList());
-        public async void DownloadImages()
+        public BitmapImage MainImage
         {
-            if(imageLinks.Length == 0)
+            get => _mainImage;
+            private set
+            {
+                _mainImage = value;
+                OnPropertyChanged(nameof(MainImage));
+            }
+        }
+
+        public ObservableCollection<Image> AllImages { get; }
+
+        public void DownloadImages()
+        {
+            if (UserFile.Preview.Length == 0)
                 return;
-            // Task.WhenAll(imageLinks.Select(x => _dataLoader.GetPreviewImage(x, CancellationToken.None)).ToArray());
+            AllImages.Clear();
+            LoadAndSetImage(UserFile.Preview[0], path =>
+            {
+                Dispatcher.CurrentDispatcher.Invoke(() =>
+                {
+                    var image = new BitmapImage(new Uri(path, UriKind.Absolute));
+                    MainImage = image;
+                    AllImages.Add(new Image(){Source = MainImage});
+                });
+            });
+            //for (var index = 1; index < _userFile.Preview.Length; index++)
+            //{
+            //    string s = _userFile.Preview[index];
+            //    var localIndex = index;
+            //    LoadAndSetImage(s, path =>
+            //    {
+            //        var bitmapImage = new BitmapImage(new Uri(path, UriKind.Absolute));
+            //        AllImages.Add(new Image() { Source = bitmapImage });
+            //    });
+            //}
+        }
+
+        private async void LoadAndSetImage(string imageLink, Action<string> setAction)
+        {
+            var image = await _dataLoader.GetPreviewImage(imageLink, CancellationToken.None);
+            setAction(image);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

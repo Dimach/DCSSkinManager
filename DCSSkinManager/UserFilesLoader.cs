@@ -214,28 +214,22 @@ namespace DCSSkinManager
             }
         }
 
-        public Task<BitmapImage> GetPreviewImage(String url, CancellationToken token)
+        public Task<string> GetPreviewImage(String url, CancellationToken token)
         {
             return Task.Run(async () =>
             {
-                var cacheFileName = Path.Combine(DcsInstallDirectory, @".DCSSkinManager\PreviewCache");
-                if (!Directory.Exists(cacheFileName))
-                    Directory.CreateDirectory(cacheFileName);
-                cacheFileName = Path.Combine(cacheFileName, url.Replace("/", "$"));
-                if (File.Exists(cacheFileName))
-                    return new BitmapImage(new Uri(cacheFileName));
+                var cacheFolderPath = Path.Combine(DcsInstallDirectory, @".DCSSkinManager\PreviewCache");
+                if (!Directory.Exists(cacheFolderPath))
+                    Directory.CreateDirectory(cacheFolderPath);
+                var fileInfo = new FileInfo(Path.Combine(cacheFolderPath, url.Replace("/", "$")));
+                if (fileInfo.Exists && fileInfo.Length > 0)
+                    return fileInfo.FullName;
                 var resource = await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token);
-                using (var fileStream = new FileStream(cacheFileName, FileMode.Open))
+                using (var fileStream = fileInfo.Create())
                 {
                     resource.CopyTo(fileStream);
                 }
-
-                resource.Position = 0;
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.StreamSource = resource;
-                image.EndInit();
-                return image;
+                return fileInfo.FullName;
             }, token);
         }
 

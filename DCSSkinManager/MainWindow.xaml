@@ -16,11 +16,6 @@
                       d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
                       Title="DCS Skin Manager (dev alpha)" Height="780" Width="1200">
     <Window.Resources>
-        <ImageSource x:Key="mainSample">Samples/Main.jpg</ImageSource>
-        <ImageSource x:Key="sample1">Samples/Sample1.jpg</ImageSource>
-        <ImageSource x:Key="sample2">Samples/Sample2.jpg</ImageSource>
-        <ImageSource x:Key="sample3">Samples/Sample3.jpg</ImageSource>
-        <ImageSource x:Key="sample4">Samples/Sample4.jpg</ImageSource>
         <Ellipse x:Key="AppThemeMenuIcon"
                  Width="16"
                  Height="16"
@@ -80,26 +75,27 @@
 
         <DataTemplate x:Key="UserFileMenuItem" DataType="{x:Type Controls:HamburgerMenuGlyphItem}">
             <DockPanel Height="48" LastChildFill="True" Margin="10">
-                <ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" Margin="5 0 5 0"></ProgressBar>
+                <!--<ProgressBar DockPanel.Dock="Bottom" IsIndeterminate="True" Margin="5 0 5 0"></ProgressBar>-->
                 <Image Margin="5"
                        DockPanel.Dock="Left"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
-                       Source="{DynamicResource mainSample}"
+                       Source="{Binding MainImage}"
                        Stretch="Uniform" />
                 <Controls:ToggleSwitch DockPanel.Dock="Right"
                                        VerticalAlignment="Center"
                                        Style="{StaticResource MahApps.Metro.Styles.ToggleSwitch.Win10}"
                                        OnLabel=""
                                        OffLabel=""
-                                       CheckChangedCommand="{Binding RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay, Path=DataContext.DownloadCommandSwitch}"
                                        CheckedCommand="{Binding RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay, Path=DataContext.CheckedCommand}"
+                                       CheckedCommandParameter="{Binding Path=.}"
                                        UnCheckedCommand="{Binding RelativeSource={RelativeSource AncestorType=Window}, Mode=OneWay, Path=DataContext.UncheckedCommand}"
-                                       IsChecked="{Binding IsDownloaded}" />
+                                       UnCheckedCommandParameter="{Binding Path=.}"
+                                       IsChecked="{Binding IsDownloaded, Mode=OneWay}" />
                 <Viewbox VerticalAlignment="Center" MinHeight="10" Margin="4">
                     <TextBlock x:Name="TextPart"
                                TextWrapping="Wrap"
-                               Text="{Binding Name}" />
+                               Text="{Binding Name, Mode=OneWay}" />
                 </Viewbox>
             </DockPanel>
         </DataTemplate>
@@ -136,17 +132,12 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                FontSize="24"
-                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Name}" />
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Name, Mode=OneWay}" />
                 </Border>
-                <Controls:FlipView DockPanel.Dock="Bottom" MouseHoverBorderEnabled="False" IsBannerEnabled="False">
-                    <Controls:FlipView.Items>
-                        <Image Source="{StaticResource mainSample}" />
-                        <Image Source="{StaticResource sample1}" />
-                        <Image Source="{StaticResource sample2}" />
-                        <Image Source="{StaticResource sample3}" />
-                        <Image Source="{StaticResource sample4}" />
-                    </Controls:FlipView.Items>
-                </Controls:FlipView>
+                <Controls:FlipView DockPanel.Dock="Bottom" 
+                                   MouseHoverBorderEnabled="False" 
+                                   IsBannerEnabled="False" 
+                                   ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.AllImages}"/>
                 <TextBlock DockPanel.Dock="Left"
                            Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Description}"
                            MaxWidth="600" TextWrapping="Wrap" />
@@ -164,16 +155,16 @@
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Column="0" Grid.Row="0" Text="Author" />
                     <TextBlock Grid.Column="1" Grid.Row="0"
-                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Author}" />
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Author, Mode=OneWay}" />
                     <TextBlock Grid.Column="0" Grid.Row="1" Text="Downloads" />
                     <TextBlock Grid.Column="1" Grid.Row="1"
-                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Downloads}" />
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Downloads, Mode=OneWay}" />
                     <TextBlock Grid.Column="0" Grid.Row="3" Text="Size" />
                     <TextBlock Grid.Column="1" Grid.Row="3"
-                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Size}" />
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Size, Mode=OneWay}" />
                     <TextBlock Grid.Column="0" Grid.Row="4" Text="Date" />
                     <TextBlock Grid.Column="1" Grid.Row="4"
-                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Date}" />
+                               Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:HamburgerMenu}, Path=SelectedItem.Date, Mode=OneWay}" />
                 </Grid>
             </DockPanel>
         </DataTemplate>
