@@ -221,7 +221,7 @@ namespace DCSSkinManager
                 var cacheFolderPath = Path.Combine(DcsInstallDirectory, @".DCSSkinManager\PreviewCache");
                 if (!Directory.Exists(cacheFolderPath))
                     Directory.CreateDirectory(cacheFolderPath);
-                var fileInfo = new FileInfo(Path.Combine(cacheFolderPath, url.Replace("/", "$")));
+                var fileInfo = new FileInfo(Path.Combine(cacheFolderPath, WebUtility.UrlDecode(url.Replace("/", "$"))));
                 if (fileInfo.Exists && fileInfo.Length > 0)
                     return fileInfo.FullName;
                 var resource = await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token);
