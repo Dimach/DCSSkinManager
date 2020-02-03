@@ -229,6 +229,7 @@ namespace DCSSkinManager
                 {
                     resource.CopyTo(fileStream);
                 }
+
                 return fileInfo.FullName;
             }, token);
         }
@@ -305,12 +306,13 @@ namespace DCSSkinManager
         {
             return Task.Run(() =>
             {
-                foreach (var dir in Directory.GetDirectories(Path.Combine(DcsInstallDirectory, "Liveries", file.UnitType.DirectoryName())))
+                foreach (var i in Directory.GetDirectories(Path.Combine(DcsInstallDirectory, "Liveries", file.UnitType.DirectoryName())))
                 {
+                    var dir = Path.GetFileName(i);
                     var index = dir.IndexOf(".");
                     if (index != -1 && dir.Substring(0, index).Equals(file.Id))
                     {
-                        Directory.Delete(dir, true);
+                        Directory.Delete(i, true);
                     }
                 }
             });
