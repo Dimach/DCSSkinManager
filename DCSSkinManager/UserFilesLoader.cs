@@ -175,7 +175,8 @@ namespace DCSSkinManager
 
     public class DataLoader
     {
-        public String DcsInstallDirectory;
+        public string DcsInstallDirectory;
+        private Dictionary<string, Task<string>> downloadingPreviewImages = new Dictionary<string, Task<string>>();
 
         public DataLoader(string dcsInstallDirectory)
         {
@@ -214,24 +215,39 @@ namespace DCSSkinManager
             }
         }
 
-        public Task<string> GetPreviewImage(String url, CancellationToken token)
+        public Task<string> GetPreviewImage(string url, CancellationToken token)
         {
-            return Task.Run(async () =>
+            lock (downloadingPreviewImages)
             {
-                var cacheFolderPath = Path.Combine(DcsInstallDirectory, @".DCSSkinManager\PreviewCache");
-                if (!Directory.Exists(cacheFolderPath))
-                    Directory.CreateDirectory(cacheFolderPath);
-                var fileInfo = new FileInfo(Path.Combine(cacheFolderPath, WebUtility.UrlDecode(url.Replace("/", "$"))));
-                if (fileInfo.Exists && fileInfo.Length > 0)
-                    return fileInfo.FullName;
-                var resource = await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token);
-                using (var fileStream = fileInfo.Create())
+                if (downloadingPreviewImages.ContainsKey(url))
                 {
-                    resource.CopyTo(fileStream);
+                    return downloadingPreviewImages[url];
                 }
 
-                return fileInfo.FullName;
-            }, token);
+                var task = Task.Run(async () =>
+                {
+                    var cacheFolderPath = Path.Combine(DcsInstallDirectory, @".DCSSkinManager\PreviewCache");
+                    if (!Directory.Exists(cacheFolderPath))
+                        Directory.CreateDirectory(cacheFolderPath);
+                    var fileInfo = new FileInfo(Path.Combine(cacheFolderPath, WebUtility.UrlDecode(url.Replace("/", "$"))));
+                    if (fileInfo.Exists && fileInfo.Length > 0)
+                        return fileInfo.FullName;
+                    var resource = await DownloadResource($@"https://www.digitalcombatsimulator.com/upload/iblock/{url}", token);
+                    using (var fileStream = fileInfo.Create())
+                    {
+                        resource.CopyTo(fileStream);
+                    }
+
+                    lock (downloadingPreviewImages)
+                    {
+                        downloadingPreviewImages.Remove(url);
+                    }
+
+                    return fileInfo.FullName;
+                }, token);
+                downloadingPreviewImages[url] = task;
+                return task;
+            }
         }
 
         public Task<UserFiles> LoadUserFiles(UnitType unit, CancellationToken token)
