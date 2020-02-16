@@ -271,46 +271,21 @@ namespace DCSSkinManager
                 if (endIndex < 0) continue;
                 var userFile = new UserFile(type);
                 var dataString = i.Substring(0, endIndex);
+
+                var match = Regex.Match(dataString, "<h2><a href=\"\\/en\\/files\\/(.+)\\/\">(.+)<\\/a>");
+                userFile.Id = match.Groups[1].Value;
+                userFile.Name = WebUtility.HtmlDecode(match.Groups[2].Value.Trim());
+                userFile.Author = WebUtility.HtmlDecode(Regex.Match(dataString, "Author - <a href=\".+\">(.+)<\\/a>").Groups[1].Value.Trim());
+                userFile.Date = Regex.Match(dataString, "Date - (.+)<\\/div>").Groups[1].Value.Trim();
+                userFile.Description = WebUtility.HtmlDecode(Regex.Match(dataString, "<div class=\"row file-preview-text\">[\\s\\S]+?>([\\s\\S]+?)<\\/div>").Groups[1].Value.Replace("\n", "").Trim().Replace("<br />", "\n"));
+                userFile.Size = Regex.Match(dataString, "Size:<\\/b>(.+)<\\/li>").Groups[1].Value.Trim();
+                userFile.Downloads = Regex.Match(dataString, "Downloaded:<\\/b>(.+)<\\/li>").Groups[1].Value.Trim();
+                userFile.DownloadLink = WebUtility.HtmlDecode(Regex.Match(dataString, "<a href=\"(.+?)\">Download<\\/a>").Groups[1].Value.Trim());
+                var matches = Regex.Matches(dataString, "<a href=\"\\/upload\\/iblock(.+?)\"");
+                userFile.Preview = new string[matches.Count];
+                for (var j = 0; j < userFile.Preview.Length; j++)
                 {
-                    var name = Regex.Match(dataString, "<h2><a href=\".+\">.+<\\/a>").Value.Substring(13);
-                    userFile.Id = name.Substring(0, name.IndexOf("\"")).Replace("/en/files/", "").Replace("/", "");
-                    var startIndex = name.IndexOf(">") + 1;
-                    userFile.Name = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("</a>") - startIndex).Trim());
-                }
-                {
-                    var name = Regex.Match(dataString, "Author - <a href=\".+\">.+<\\/a>").Value;
-                    var startIndex = name.IndexOf(">") + 1;
-                    userFile.Author = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("</a>") - startIndex).Trim());
-                }
-                {
-                    var name = Regex.Match(dataString, "Date - .+<\\/div>").Value;
-                    userFile.Date = name.Substring(7, name.IndexOf("</div>") - 7).Trim();
-                }
-                {
-                    var name = Regex.Match(dataString, "<div class=\"row file-preview-text\">[\\s\\S]+?<\\/div>").Value;
-                    var startIndex = name.IndexOf(">", 40) + 1;
-                    userFile.Description = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("</div>") - startIndex).Replace("\n", "").Replace("\n", "").Trim().Replace("<br />", "\n"));
-                }
-                {
-                    var name = Regex.Match(dataString, "Size:<\\/b>.+<\\/li>").Value;
-                    userFile.Size = name.Substring(10, name.IndexOf("</li>") - 10).Trim();
-                }
-                {
-                    var name = Regex.Match(dataString, "Downloaded:<\\/b>.+<\\/li>").Value;
-                    userFile.Downloads = name.Substring(15, name.IndexOf("</li>") - 15).Trim();
-                }
-                {
-                    var name = Regex.Match(dataString, "<a href=\".+\">Download<\\/a>").Value;
-                    var startIndex = name.IndexOf("\"") + 1;
-                    userFile.DownloadLink = WebUtility.HtmlDecode(name.Substring(startIndex, name.IndexOf("\"", startIndex) - startIndex).Trim());
-                }
-                {
-                    var matches = Regex.Matches(dataString, "<a href=\"\\/upload\\/iblock.+?\"");
-                    userFile.Preview = new String[matches.Count];
-                    for (int j = 0; j < userFile.Preview.Length; j++)
-                    {
-                        userFile.Preview[j] = matches[j].Value.Substring(24, matches[j].Value.Length - 25); ///upload/iblock/
-                    }
+                    userFile.Preview[j] = matches[j].Groups[1].Value;
                 }
                 list.Files.Add(userFile);
             }
